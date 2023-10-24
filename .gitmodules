@@ -1,0 +1,9 @@
+[submodule "Python Code/PointCloudVisualizer"]
+	path = Python Code/PointCloudVisualizer
+	url = https://github.com/JuyiZhang/PointCloudVisualizer
+[submodule "Reference Repository/HoloLens2-ResearchMode-Unity"]
+	path = Reference Repository/HoloLens2-ResearchMode-Unity
+	url = https://github.com/petergu684/HoloLens2-ResearchMode-Unity
+[submodule "Reference Repository/HoloLens2ForCV"]
+	path = Reference Repository/HoloLens2ForCV
+	url = https://github.com/microsoft/HoloLens2ForCV
