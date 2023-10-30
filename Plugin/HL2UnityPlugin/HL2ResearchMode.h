@@ -63,6 +63,7 @@ namespace winrt::HL2UnityPlugin::implementation
         void SetReferenceCoordinateSystem(Windows::Perception::Spatial::SpatialCoordinateSystem refCoord);
         void SetPointCloudRoiInSpace(float centerX, float centerY, float centerZ, float boundX, float boundY, float boundZ);
         void SetPointCloudDepthOffset(uint16_t offset);
+        void Debug(winrt::hstring text);
 
         com_array<uint16_t> GetDepthMapBuffer();
         com_array<uint8_t> GetDepthMapTextureBuffer();

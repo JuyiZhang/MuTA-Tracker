@@ -278,6 +278,7 @@ public class TCPClient : MonoBehaviour
     #region Button Callback
     public void ConnectToServerEvent()
     {
+        Debug.Log("Begin Connection...");
 #if WINDOWS_UWP
         if (!connected) StartCoonection();
         else StopCoonection();

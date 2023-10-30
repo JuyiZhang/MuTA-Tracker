@@ -1334,6 +1334,9 @@ namespace winrt::HL2UnityPlugin::implementation
         return tempBuffer;
     }
 
+    void HL2ResearchMode::Debug(winrt::hstring text) {
+        OutputDebugString(text.c_str());
+    }
     // Get the buffer for point cloud in the form of float array.
     // There will be 3n elements in the array where the 3i, 3i+1, 3i+2 element correspond to x, y, z component of the i'th point. (i->[0,n-1])
     com_array<float> HL2ResearchMode::GetLongThrowPointCloudBuffer()

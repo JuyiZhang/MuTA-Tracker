@@ -20,21 +20,13 @@ public class ResearchModeVideoStream : MonoBehaviour
         LongThrow,
         None
     };
-    [SerializeField] DepthSensorMode depthSensorMode = DepthSensorMode.ShortThrow;
+
     [SerializeField] bool enablePointCloud = true;
-    [SerializeField] GameObject camera;
+    [SerializeField] Camera camera;
+    [SerializeField]
+    private GameObject debugger;
 
     TCPClient tcpClient;
-
-    public GameObject depthPreviewPlane = null;
-    private Material depthMediaMaterial = null;
-    private Texture2D depthMediaTexture = null;
-    private byte[] depthFrameData = null;
-
-    public GameObject shortAbImagePreviewPlane = null;
-    private Material shortAbImageMediaMaterial = null;
-    private Texture2D shortAbImageMediaTexture = null;
-    private byte[] shortAbImageFrameData = null;
 
     public GameObject longDepthPreviewPlane = null;
     private Material longDepthMediaMaterial = null;
@@ -46,21 +38,12 @@ public class ResearchModeVideoStream : MonoBehaviour
     private Texture2D longAbImageMediaTexture = null;
     private byte[] longAbImageFrameData = null;
 
-    public GameObject LFPreviewPlane = null;
-    private Material LFMediaMaterial = null;
-    private Texture2D LFMediaTexture = null;
-    private byte[] LFFrameData = null;
+    private bool continuousSend = false;
 
-    public GameObject RFPreviewPlane = null;
-    private Material RFMediaMaterial = null;
-    private Texture2D RFMediaTexture = null;
-    private byte[] RFFrameData = null;
+    private Debugger currentDebugger;
 
-    public UnityEngine.UI.Text text;
+    
 
-    public GameObject pointCloudRendererGo;
-    public Color pointColor = Color.white;
-    private PointCloudRenderer pointCloudRenderer;
 #if ENABLE_WINMD_SUPPORT
     Windows.Perception.Spatial.SpatialCoordinateSystem unityWorldOrigin;
 #endif
@@ -80,82 +63,42 @@ public class ResearchModeVideoStream : MonoBehaviour
     }
     void Start()
     {
-        if (depthSensorMode == DepthSensorMode.ShortThrow)
-        {
-            if (depthPreviewPlane != null)
-            {
-                depthMediaMaterial = depthPreviewPlane.GetComponent<MeshRenderer>().material;
-                depthMediaTexture = new Texture2D(512, 512, TextureFormat.Alpha8, false);
-                depthMediaMaterial.mainTexture = depthMediaTexture;
-            }
 
-            if (shortAbImagePreviewPlane != null)
-            {
-                shortAbImageMediaMaterial = shortAbImagePreviewPlane.GetComponent<MeshRenderer>().material;
-                shortAbImageMediaTexture = new Texture2D(512, 512, TextureFormat.Alpha8, false);
-                shortAbImageMediaMaterial.mainTexture = shortAbImageMediaTexture;
-            }
-            longDepthPreviewPlane.SetActive(false);
-            longAbImagePreviewPlane.SetActive(false);
-        }
-        
-        if (depthSensorMode == DepthSensorMode.LongThrow)
-        {
-            if (longDepthPreviewPlane != null)
-            {
-                longDepthMediaMaterial = longDepthPreviewPlane.GetComponent<MeshRenderer>().material;
-                longDepthMediaTexture = new Texture2D(320, 288, TextureFormat.Alpha8, false);
-                longDepthMediaMaterial.mainTexture = longDepthMediaTexture;
-            }
+        currentDebugger = debugger.GetComponent<Debugger>();
 
-            if (longAbImagePreviewPlane != null)
-            {
-                longAbImageMediaMaterial = longAbImagePreviewPlane.GetComponent<MeshRenderer>().material;
-                longAbImageMediaTexture = new Texture2D(320, 288, TextureFormat.Alpha8, false);
-                longAbImageMediaMaterial.mainTexture = longAbImageMediaTexture;
-            }
-            depthPreviewPlane.SetActive(false);
-            shortAbImagePreviewPlane.SetActive(false);
-        }
-        
-        if (LFPreviewPlane != null)
+        if (longDepthPreviewPlane != null)
         {
-            LFMediaMaterial = LFPreviewPlane.GetComponent<MeshRenderer>().material;
-            LFMediaTexture = new Texture2D(640, 480, TextureFormat.Alpha8, false);
-            LFMediaMaterial.mainTexture = LFMediaTexture;
+            longDepthMediaMaterial = longDepthPreviewPlane.GetComponent<MeshRenderer>().material;
+            longDepthMediaTexture = new Texture2D(320, 288, TextureFormat.Alpha8, false);
+            longDepthMediaMaterial.mainTexture = longDepthMediaTexture;
         }
 
-        if (RFPreviewPlane != null)
+        if (longAbImagePreviewPlane != null)
         {
-            RFMediaMaterial = RFPreviewPlane.GetComponent<MeshRenderer>().material;
-            RFMediaTexture = new Texture2D(640, 480, TextureFormat.Alpha8, false);
-            RFMediaMaterial.mainTexture = RFMediaTexture;
+            longAbImageMediaMaterial = longAbImagePreviewPlane.GetComponent<MeshRenderer>().material;
+            longAbImageMediaTexture = new Texture2D(320, 288, TextureFormat.Alpha8, false);
+            longAbImageMediaMaterial.mainTexture = longAbImageMediaTexture;
         }
 
-        if (pointCloudRendererGo != null)
-        {
-            pointCloudRenderer = pointCloudRendererGo.GetComponent<PointCloudRenderer>();
-        }
+        longDepthPreviewPlane.SetActive(true);
+        longAbImagePreviewPlane.SetActive(true);
 
         tcpClient = GetComponent<TCPClient>();
 
 #if ENABLE_WINMD_SUPPORT
         researchMode = new HL2ResearchMode();
 
-        // Depth sensor should be initialized in only one mode
-        if (depthSensorMode == DepthSensorMode.LongThrow) researchMode.InitializeLongDepthSensor();
-        else if (depthSensorMode == DepthSensorMode.ShortThrow) researchMode.InitializeDepthSensor();
+        // Initialize Long Depth Sensor
+        researchMode.InitializeLongDepthSensor();
         
-        researchMode.InitializeSpatialCamerasFront();
         researchMode.SetReferenceCoordinateSystem(unityWorldOrigin);
         researchMode.SetPointCloudDepthOffset(0);
 
         // Depth sensor should be initialized in only one mode
-        if (depthSensorMode == DepthSensorMode.LongThrow) researchMode.StartLongDepthSensorLoop(enablePointCloud);
-        else if (depthSensorMode == DepthSensorMode.ShortThrow) researchMode.StartDepthSensorLoop(enablePointCloud);
+        researchMode.StartLongDepthSensorLoop(enablePointCloud);
 
-        researchMode.StartSpatialCamerasFrontLoop();
 #endif
+        currentDebugger.AddDebugMessage("Successfully initiated Hololens Researchmode");
         tcpClient.ConnectToServerEvent();
     }
 
@@ -163,51 +106,9 @@ public class ResearchModeVideoStream : MonoBehaviour
     void LateUpdate()
     {
 #if ENABLE_WINMD_SUPPORT
-        // update depth map texture
-        if (depthSensorMode == DepthSensorMode.ShortThrow && startRealtimePreview && 
-            depthPreviewPlane != null && researchMode.DepthMapTextureUpdated())
-        {
-            byte[] frameTexture = researchMode.GetDepthMapTextureBuffer();
-            if (frameTexture.Length > 0)
-            {
-                if (depthFrameData == null)
-                {
-                    depthFrameData = frameTexture;
-                }
-                else
-                {
-                    System.Buffer.BlockCopy(frameTexture, 0, depthFrameData, 0, depthFrameData.Length);
-                }
-
-                depthMediaTexture.LoadRawTextureData(depthFrameData);
-                depthMediaTexture.Apply();
-            }
-        }
-
-        // update short-throw AbImage texture
-        if (depthSensorMode == DepthSensorMode.ShortThrow && startRealtimePreview && 
-            shortAbImagePreviewPlane != null && researchMode.ShortAbImageTextureUpdated())
-        {
-            byte[] frameTexture = researchMode.GetShortAbImageTextureBuffer();
-            if (frameTexture.Length > 0)
-            {
-                if (shortAbImageFrameData == null)
-                {
-                    shortAbImageFrameData = frameTexture;
-                }
-                else
-                {
-                    System.Buffer.BlockCopy(frameTexture, 0, shortAbImageFrameData, 0, shortAbImageFrameData.Length);
-                }
-
-                shortAbImageMediaTexture.LoadRawTextureData(shortAbImageFrameData);
-                shortAbImageMediaTexture.Apply();
-            }
-        }
 
         // update long depth map texture
-        if (depthSensorMode == DepthSensorMode.LongThrow && startRealtimePreview && 
-            longDepthPreviewPlane != null && researchMode.LongDepthMapTextureUpdated())
+        if (startRealtimePreview && longDepthPreviewPlane != null && researchMode.LongDepthMapTextureUpdated())
         {
             byte[] frameTexture = researchMode.GetLongDepthMapTextureBuffer();
             if (frameTexture.Length > 0)
@@ -227,8 +128,7 @@ public class ResearchModeVideoStream : MonoBehaviour
         }
 
         // update long-throw AbImage texture
-        if (depthSensorMode == DepthSensorMode.LongThrow && startRealtimePreview &&
-            longAbImagePreviewPlane != null && researchMode.LongAbImageTextureUpdated())
+        if (startRealtimePreview && longAbImagePreviewPlane != null && researchMode.LongAbImageTextureUpdated())
         {
             byte[] frameTexture = researchMode.GetLongAbImageTextureBuffer();
             if (frameTexture.Length > 0)
@@ -247,57 +147,16 @@ public class ResearchModeVideoStream : MonoBehaviour
             }
         }
 
-        // update LF camera texture
-        if (startRealtimePreview && LFPreviewPlane != null && researchMode.LFImageUpdated())
-        {
-            long ts;
-            byte[] frameTexture = researchMode.GetLFCameraBuffer(out ts);
-            if (frameTexture.Length > 0)
-            {
-                if (LFFrameData == null)
-                {
-                    LFFrameData = frameTexture;
-                }
-                else
-                {
-                    System.Buffer.BlockCopy(frameTexture, 0, LFFrameData, 0, LFFrameData.Length);
-                }
-
-                LFMediaTexture.LoadRawTextureData(LFFrameData);
-                LFMediaTexture.Apply();
-            }
-        }
-        // update RF camera texture
-        if (startRealtimePreview && RFPreviewPlane != null && researchMode.RFImageUpdated())
-        {
-            long ts;
-            byte[] frameTexture = researchMode.GetRFCameraBuffer(out ts);
-            if (frameTexture.Length > 0)
-            {
-                if (RFFrameData == null)
-                {
-                    RFFrameData = frameTexture;
-                }
-                else
-                {
-                    System.Buffer.BlockCopy(frameTexture, 0, RFFrameData, 0, RFFrameData.Length);
-                }
-
-                RFMediaTexture.LoadRawTextureData(RFFrameData);
-                RFMediaTexture.Apply();
-            }
-        }
-
         // Update point cloud
         UpdatePointCloud();
         
         
 #endif
-        /*if (tcpClient.Connected && !updatedPointCloudSent)
+        if (tcpClient.Connected && !updatedPointCloudSent && continuousSend)
         {
             SendLongDepthSensorCombined();
             updatedPointCloudSent = true;
-        }*/
+        }
     }
 
     private bool updatedPointCloudSent = true;
@@ -305,34 +164,23 @@ public class ResearchModeVideoStream : MonoBehaviour
 #if ENABLE_WINMD_SUPPORT
     private void UpdatePointCloud()
     {
-        if (enablePointCloud && renderPointCloud && pointCloudRendererGo != null)
+        if (enablePointCloud)
         {
-            if ((depthSensorMode == DepthSensorMode.LongThrow && !researchMode.LongThrowPointCloudUpdated()) ||
-                (depthSensorMode == DepthSensorMode.ShortThrow && !researchMode.PointCloudUpdated())) return;
-
-            
-            if (depthSensorMode == DepthSensorMode.LongThrow) pointCloud = researchMode.GetLongThrowPointCloudBuffer();
-            else if (depthSensorMode == DepthSensorMode.ShortThrow) pointCloud = researchMode.GetPointCloudBuffer();
-            
-
-            if (pointCloud.Length > 0)
-            {
+            if (researchMode.LongThrowPointCloudUpdated()){
+                pointCloud = researchMode.GetLongThrowPointCloudBuffer();     
                 updatedPointCloudSent = false;
-                int pointCloudLength = pointCloud.Length / 3;
-                Vector3[] pointCloudVector3 = new Vector3[pointCloudLength];
-                for (int i = 0; i < pointCloudLength; i++)
-                {
-                    pointCloudVector3[i] = new Vector3(pointCloud[3 * i]-(float)0.1, pointCloud[3 * i + 1], pointCloud[3 * i + 2]);
-                }
-                text.text = "Point Cloud Length: " + pointCloudVector3.Length.ToString();
-                pointCloudRenderer.Render(pointCloudVector3, pointColor);
             }
         }
     }
 #endif
 
+
+
+    #region Button Event Functions
+
     public void SendLongDepthSensorCombined()
     {
+        currentDebugger.AddDebugMessage("Sending Data...");
 #if WINDOWS_UWP
         long timestamp = GetCurrentTimestampUnix();
         var depthMap = researchMode.GetLongDepthMapBuffer();
@@ -342,27 +190,6 @@ public class ResearchModeVideoStream : MonoBehaviour
         }
 #endif
     }
-
-    #region Button Event Functions
-    public void TogglePreviewEvent()
-    {
-        startRealtimePreview = !startRealtimePreview;
-    }
-
-    bool renderPointCloud = true;
-    public void TogglePointCloudEvent()
-    {
-        renderPointCloud = !renderPointCloud;
-        if (renderPointCloud)
-        {
-            pointCloudRendererGo.SetActive(true);
-        }
-        else
-        {
-            pointCloudRendererGo.SetActive(false);
-        }
-    }
-
     public void StopSensorsEvent()
     {
 #if ENABLE_WINMD_SUPPORT
@@ -370,60 +197,10 @@ public class ResearchModeVideoStream : MonoBehaviour
 #endif
         startRealtimePreview = false;
     }
-
-    public void SaveAHATSensorDataEvent()
+    public void startContinuousSend()
     {
-#if ENABLE_WINMD_SUPPORT
-        long timestamp = GetCurrentTimestampUnix();
-        var depthMap = researchMode.GetDepthMapBuffer();
-        var AbImage = researchMode.GetShortAbImageBuffer();
-#if WINDOWS_UWP
-        if (tcpClient != null)
-        {
-            tcpClient.SendUINT16Async(depthMap, AbImage, timestamp);
-        }
-#endif
-#endif
-    }
-
-    public void SaveLongAHATSensorDataEvent()
-    {
-#if ENABLE_WINMD_SUPPORT
-        long timestamp = GetCurrentTimestampUnix();
-        var depthMap = researchMode.GetLongDepthMapBuffer();
-        var AbImage = researchMode.GetLongAbImageBuffer();
-#if WINDOWS_UWP
-        if (tcpClient != null)
-        {
-            tcpClient.SendUINT16Async(depthMap, AbImage, timestamp);
-        }
-#endif
-#endif
-    }
-
-    public void SaveSpatialImageEvent()
-    {
-#if ENABLE_WINMD_SUPPORT
-#if WINDOWS_UWP
-        long ts_ft_left, ts_ft_right;
-        var LRFImage = researchMode.GetLRFCameraBuffer(out ts_ft_left, out ts_ft_right);
-        Windows.Perception.PerceptionTimestamp ts_left = Windows.Perception.PerceptionTimestampHelper.FromHistoricalTargetTime(DateTime.FromFileTime(ts_ft_left));
-        Windows.Perception.PerceptionTimestamp ts_right = Windows.Perception.PerceptionTimestampHelper.FromHistoricalTargetTime(DateTime.FromFileTime(ts_ft_right));
-
-        long ts_unix_left = ts_left.TargetTime.ToUnixTimeMilliseconds();
-        long ts_unix_right = ts_right.TargetTime.ToUnixTimeMilliseconds();
-        long ts_unix_current = GetCurrentTimestampUnix();
-
-        text.text = "Left: " + ts_unix_left.ToString() + "\n" +
-            "Right: " + ts_unix_right.ToString() + "\n" +
-            "Current: " + ts_unix_current.ToString();
-
-        if (tcpClient != null)
-        {
-            tcpClient.SendSpatialImageAsync(LRFImage, ts_unix_left, ts_unix_right);
-        }
-#endif
-#endif
+        currentDebugger.AddDebugMessage("The continuous send is now " + continuousSend.ToString());
+        continuousSend = !continuousSend;
     }
 
     #endregion

@@ -71,5 +71,6 @@ namespace HL2UnityPlugin
         void SetReferenceCoordinateSystem(Windows.Perception.Spatial.SpatialCoordinateSystem refCoord);
         void SetPointCloudRoiInSpace(Single centerX, Single centerY, Single centerZ, Single boundX, Single boundY, Single boundZ);
         void SetPointCloudDepthOffset(UInt16 offset);
+        void Debug(String text);
     }
 }
