@@ -14,11 +14,9 @@ def home():
 @app.route("/add_anchor", methods=['POST'])
 def addAnchor():
     
-    request_data = request.get_json()
-    
     if request.method == 'POST':
-        anchorid = request_data["anchorID"]
-        creator = request_data["creator"]
+        anchorid = request.form.get("anchorID")
+        creator = request.form.get("creator")
         ctime = str(int(time.time_ns()/1000000))
     
     result = {
@@ -33,6 +31,11 @@ def addAnchor():
         outfile.write(json_result)
         
     return json_result
+
+@app.route("/remove_anchor")
+def removeAnchor():
+    if os.path.exists("anchor_data.json"):
+        os.remove("anchor_data.json")
 
 @app.route("/query_anchor")
 def queryAnchor():
@@ -84,23 +87,24 @@ def queryHost():
     
     if not(os.path.exists("host_data.json")):
         
-        host_result = {
+        """host_result = {
             "result": "failed",
             "reason": "1",
             "reason_string": "Host Not Online"
         }
         
-        return json.dumps(host_result)
+        return json.dumps(host_result)"""
+        return "Offline"
     
     host_file = open("host_data.json")
     
     host_json = json.load(host_file)
     
-    return host_json
+    return host_json["hostname"]
 
 @app.route("/version")
 def version():
-    return "0.0.2"
+    return "0.0.3:110120231300"
 
 def get_db():
     db = getattr(g, "_database", None)

@@ -17,6 +17,7 @@ public class Debugger: MonoBehaviour
     }
     public void AddDebugMessage(string debugMsg)
     {
+        Debug.Log(debugMsg);
         if (debugMessageHistory.Count >= 10)
         {
             debugMessageHistory.Clear();

@@ -14,19 +14,29 @@ public class TCPClient : MonoBehaviour
     {
         ConnectionStatusLED.material.color = Color.red;
     }
+
+    private void Start()
+    {
+        networkUtils = GetComponent<NetworkUtils>();
+        networkUtils.onHostIPRetrieved += OnHostIPFound;
+    }
+
     private void OnApplicationFocus(bool focus)
     {
         if (!focus)
         {
-#if WINDOWS_UWP
-            StopCoonection();
-#endif
+            StopConnection();
         }
     }
     #endregion // Unity Functions
 
     [SerializeField]
-    string hostIPAddress, port;
+    private string port;
+
+    [SerializeField]
+    private Debugger debugger;
+
+    private string hostIPAddress;
 
     public Renderer ConnectionStatusLED;
     private bool connected = false;
@@ -35,12 +45,18 @@ public class TCPClient : MonoBehaviour
         get { return connected; }
     }
 
+    private NetworkUtils networkUtils;
+
 #if WINDOWS_UWP
     StreamSocket socket = null;
     public DataWriter dw;
     public DataReader dr;
-    private async void StartCoonection()
+#endif
+
+    private async void StartConnection()
     {
+        debugger.AddDebugMessage("Starting Connection...");
+#if WINDOWS_UWP
         if (socket != null) socket.Dispose();
 
         try
@@ -57,12 +73,14 @@ public class TCPClient : MonoBehaviour
         catch (Exception ex)
         {
             SocketErrorStatus webErrorStatus = SocketError.GetStatus(ex.GetBaseException().HResult);
-            Debug.Log(webErrorStatus.ToString() != "Unknown" ? webErrorStatus.ToString() : ex.Message);
+            debugger.AddDebugMessage(webErrorStatus.ToString() != "Unknown" ? webErrorStatus.ToString() : ex.Message);
         }
+#endif
     }
 
-    private void StopCoonection()
+    private void StopConnection()
     {
+#if WINDOWS_UWP
         dw?.DetachStream();
         dw?.Dispose();
         dw = null;
@@ -73,7 +91,11 @@ public class TCPClient : MonoBehaviour
 
         socket?.Dispose();
         connected = false;
+#endif
     }
+
+#if WINDOWS_UWP
+    #region Send Data
 
     public async void SendPointCloud(float[] pointCloud, long timestamp) {
     
@@ -248,11 +270,11 @@ public class TCPClient : MonoBehaviour
         }
         lastMessageSent = true;
     }
-
+    #endregion
 #endif
 
 
-    #region Helper Function
+    #region Conversion Function
     byte[] UINT16ToBytes(ushort[] data)
     {
         byte[] ushortInBytes = new byte[data.Length * sizeof(ushort)];
@@ -273,16 +295,23 @@ public class TCPClient : MonoBehaviour
         System.Buffer.BlockCopy(data, 0, bytesInFloat, 0, data.Length);
         return bytesInFloat;
     }
-    #endregion
+#endregion
 
     #region Button Callback
     public void ConnectToServerEvent()
     {
-        Debug.Log("Begin Connection...");
-#if WINDOWS_UWP
-        if (!connected) StartCoonection();
-        else StopCoonection();
-#endif
+        debugger.AddDebugMessage("Begin Connection...");
+        networkUtils.syncHostIP();
+    }
+    #endregion
+
+    #region Delegate Callback
+    public void OnHostIPFound()
+    {
+        hostIPAddress = networkUtils.getHostIP();
+        debugger.AddDebugMessage("Host IP is: " + hostIPAddress);
+        if (!connected) StartConnection();
+        else StopConnection();
     }
     #endregion
 }

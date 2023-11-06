@@ -23,10 +23,14 @@ public class AnchorModuleScript : MonoBehaviour
     // Anchor ID for anchor stored in Azure (provided by Azure) 
     public string currentAzureAnchorID = "";
 
-    private SpatialAnchorManager cloudManager;
+    
+
+    private SpatialAnchorManagerSharp cloudManager;
     private CloudSpatialAnchor currentCloudAnchor;
     private AnchorLocateCriteria anchorLocateCriteria;
     private CloudSpatialAnchorWatcher currentWatcher;
+
+    private bool sessionStartedInit = false;
 
     private readonly Queue<Action> dispatchQueue = new Queue<Action>();
 
@@ -39,11 +43,10 @@ public class AnchorModuleScript : MonoBehaviour
     void Start()
     {
         // Get a reference to the SpatialAnchorManager component (must be on the same gameobject)
-        cloudManager = GetComponent<SpatialAnchorManager>();
+        cloudManager = GetComponent<SpatialAnchorManagerSharp>();
 
         // Register for Azure Spatial Anchor events
         cloudManager.AnchorLocated += CloudManager_AnchorLocated;
-
         anchorLocateCriteria = new AnchorLocateCriteria();
         currentDebugger = debugPanel.GetComponent<Debugger>();
         currentDebugger.AddDebugMessage("Debugger Initialized");
@@ -52,6 +55,11 @@ public class AnchorModuleScript : MonoBehaviour
 
     void Update()
     {
+        if (!sessionStartedInit)
+        {
+            StartAzureSession();
+            sessionStartedInit = true;
+        }
         lock (dispatchQueue)
         {
             if (dispatchQueue.Count > 0)
@@ -88,14 +96,16 @@ public class AnchorModuleScript : MonoBehaviour
 
         if (cloudManager.Session == null)
         {
+            currentDebugger.AddDebugMessage("Cloud Manager Session Not Exist, creating...");
             // Creates a new session if one does not exist
             await cloudManager.CreateSessionAsync();
         }
-
+        currentDebugger.AddDebugMessage("Starting Session...");
         // Starts the session if not already started
         await cloudManager.StartSessionAsync();
 
         currentDebugger.AddDebugMessage("Azure session started successfully");
+
     }
 
     public async void StopAzureSession()
@@ -309,6 +319,11 @@ public class AnchorModuleScript : MonoBehaviour
         currentDebugger.AddDebugMessage($"Current Azure anchor ID successfully updated with saved Azure anchor ID '{currentAzureAnchorID}' from path '{path}'");
     }
 
+    public Pose GetCurrentAnchorTransform()
+    {
+        return currentCloudAnchor.GetPose();
+    }
+
     /*public void ShareAzureAnchorIdToNetwork()
     {
         currentDebugger.AddDebugMessage("\nAnchorModuleScript.ShareAzureAnchorID()");
@@ -362,6 +377,12 @@ public class AnchorModuleScript : MonoBehaviour
     #endregion
 
     #region Event Handlers
+
+    private void onCloudSessionStarted(object sender, EventArgs e)
+    {
+        currentDebugger.AddDebugMessage("Cloud Session Estabilished, Initializing...");
+        StartAzureSession();
+    }
     private void CloudManager_AnchorLocated(object sender, AnchorLocatedEventArgs args)
     {
         QueueOnUpdate(new Action(() => currentDebugger.AddDebugMessage($"Anchor recognized as a possible Azure anchor")));
@@ -435,6 +456,7 @@ public class AnchorModuleScript : MonoBehaviour
         }
     }
 
+    /*
     IEnumerator GetSharedAzureAnchorIDCoroutine(string sharingPin)
     {
         string url = "http://167.99.111.15:8090/file-uploads/static/file." + sharingPin.ToLower();
@@ -467,11 +489,12 @@ public class AnchorModuleScript : MonoBehaviour
                 File.WriteAllText(filePath, currentAzureAnchorID);
             }
         }
-    }
+    }*/
     #endregion
 
     #region Public Events
     public delegate void StartASASessionDelegate();
+    
     public event StartASASessionDelegate OnStartASASession;
 
     public delegate void EndASASessionDelegate();
