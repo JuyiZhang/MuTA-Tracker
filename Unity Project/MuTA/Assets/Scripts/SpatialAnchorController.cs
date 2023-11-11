@@ -25,15 +25,14 @@ public class SpatialAnchorController : MonoBehaviour
         networkUtils = GetComponent<NetworkUtils>();
         networkUtils.onAnchorNotFound += onAnchorIDNotFound;
         networkUtils.onAnchorUpdate += onAnchorIDFound;
-        anchorModule = GetComponent<AnchorModuleScript>();
-        anchorModule.OnASAMInit += startAzureAfterInit;
+        anchorModule = anchorObject.GetComponent<AnchorModuleScript>();
+        anchorModule.OnStartASASessionFinished += startAzureAfterInit;
     }
-
     
     // Update is called once per frame
     void Update()
     {
-        
+    
     }
 
     #region Public Functions
@@ -76,6 +75,7 @@ public class SpatialAnchorController : MonoBehaviour
     {
         debugger.AddDebugMessage(anchorModule.currentAzureAnchorID + " Found");
         anchorTransform = anchorModule.GetCurrentAnchorTransform();
+        debugger.AddDebugMessage("Current Position is: " + anchorTransform.position);
         onAnchorLocationFound?.Invoke();
     }
 

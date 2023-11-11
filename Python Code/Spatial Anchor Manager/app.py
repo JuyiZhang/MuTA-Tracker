@@ -104,7 +104,7 @@ def queryHost():
 
 @app.route("/version")
 def version():
-    return "0.0.3:110120231300"
+    return "0.0.4:110820231604"
 
 def get_db():
     db = getattr(g, "_database", None)

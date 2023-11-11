@@ -23,8 +23,9 @@ public class ResearchModeVideoStream : MonoBehaviour
 
     [SerializeField] bool enablePointCloud = true;
     [SerializeField] Camera camera;
-    [SerializeField]
-    private GameObject debugger;
+    [SerializeField] private GameObject debugger;
+
+    SpatialAnchorController anchorController;
 
     TCPClient tcpClient;
 
@@ -84,6 +85,7 @@ public class ResearchModeVideoStream : MonoBehaviour
         longAbImagePreviewPlane.SetActive(true);
 
         tcpClient = GetComponent<TCPClient>();
+        anchorController = GetComponent<SpatialAnchorController>();
 
 #if ENABLE_WINMD_SUPPORT
         researchMode = new HL2ResearchMode();
@@ -180,13 +182,16 @@ public class ResearchModeVideoStream : MonoBehaviour
 
     public void SendLongDepthSensorCombined()
     {
+        Vector3 currentPosition = camera.transform.position - anchorController.getAnchorPosition();
+        Vector3 currentRotation = camera.transform.rotation.eulerAngles - anchorController.getAnchorRotation();
         currentDebugger.AddDebugMessage("Sending Data...");
+        currentDebugger.AddDebugMessage("Current Position is: " + currentPosition + ". Current Rotation is: " + currentRotation);
 #if WINDOWS_UWP
         long timestamp = GetCurrentTimestampUnix();
         var depthMap = researchMode.GetLongDepthMapBuffer();
         if (tcpClient != null)
         {
-            tcpClient.SendLongDepthSensorCombined(depthMap, longAbImageFrameData, pointCloud, timestamp, camera.transform.eulerAngles, camera.transform.position);
+            tcpClient.SendLongDepthSensorCombined(depthMap, longAbImageFrameData, pointCloud, timestamp, currentRotation, currentPosition);
         }
 #endif
     }
