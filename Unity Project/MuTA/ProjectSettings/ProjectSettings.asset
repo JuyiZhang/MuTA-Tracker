@@ -617,10 +617,10 @@ PlayerSettings:
   metroPackageName: MuTATracker
   metroPackageVersion: 1.0.0.0
   metroCertificatePath: Assets/WSATestCertificate.pfx
-  metroCertificatePassword: =
+  metroCertificatePassword: 
   metroCertificateSubject: JuyiZ
   metroCertificateIssuer: JuyiZ
-  metroCertificateNotAfter: 8025e046f632db01
+  metroCertificateNotAfter: 8031779f1a36db01
   metroApplicationDescription: MuTA Tracker
   wsaImages: {}
   metroTileShortName: MuTA

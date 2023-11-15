@@ -33,9 +33,6 @@ public class TCPClient : MonoBehaviour
     [SerializeField]
     private string port;
 
-    [SerializeField]
-    private Debugger debugger;
-
     private string hostIPAddress;
 
     public Renderer ConnectionStatusLED;
@@ -55,7 +52,7 @@ public class TCPClient : MonoBehaviour
 
     private async void StartConnection()
     {
-        debugger.AddDebugMessage("Starting Connection...");
+        Debug.Log("Starting Connection...");
 #if WINDOWS_UWP
         if (socket != null) socket.Dispose();
 
@@ -73,7 +70,7 @@ public class TCPClient : MonoBehaviour
         catch (Exception ex)
         {
             SocketErrorStatus webErrorStatus = SocketError.GetStatus(ex.GetBaseException().HResult);
-            debugger.AddDebugMessage(webErrorStatus.ToString() != "Unknown" ? webErrorStatus.ToString() : ex.Message);
+            Debug.Log(webErrorStatus.ToString() != "Unknown" ? webErrorStatus.ToString() : ex.Message);
         }
 #endif
     }
@@ -300,8 +297,9 @@ public class TCPClient : MonoBehaviour
     #region Button Callback
     public void ConnectToServerEvent()
     {
-        debugger.AddDebugMessage("Begin Connection...");
-        networkUtils.syncHostIP();
+        var networkUtil = GetComponent<NetworkUtils>();
+        Debug.Log("Begin Connection...");
+        networkUtil.syncHostIP();
     }
     #endregion
 
@@ -309,7 +307,7 @@ public class TCPClient : MonoBehaviour
     public void OnHostIPFound()
     {
         hostIPAddress = networkUtils.getHostIP();
-        debugger.AddDebugMessage("Host IP is: " + hostIPAddress);
+        Debug.Log("Host IP is: " + hostIPAddress);
         if (!connected) StartConnection();
         else StopConnection();
     }

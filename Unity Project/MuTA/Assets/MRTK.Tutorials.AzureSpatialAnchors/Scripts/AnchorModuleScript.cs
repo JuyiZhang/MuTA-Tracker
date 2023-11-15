@@ -19,18 +19,14 @@ public class AnchorModuleScript : MonoBehaviour
     [Tooltip("The unique identifier used to identify the shared file (containing the Azure anchor ID) on the web server.")]
     private string publicSharingPin = "1982734901747";
 
-    [SerializeField]
-    private Debugger debugger;
-
     [HideInInspector]
     // Anchor ID for anchor stored in Azure (provided by Azure) 
-    public string currentAzureAnchorID = ""; 
+    public string currentAzureAnchorID = "";
 
     private SpatialAnchorManager cloudManager;
     private CloudSpatialAnchor currentCloudAnchor;
     private AnchorLocateCriteria anchorLocateCriteria;
     private CloudSpatialAnchorWatcher currentWatcher;
-    private Pose currentAnchorTransform;
 
     private readonly Queue<Action> dispatchQueue = new Queue<Action>();
 
@@ -44,19 +40,10 @@ public class AnchorModuleScript : MonoBehaviour
         cloudManager.AnchorLocated += CloudManager_AnchorLocated;
 
         anchorLocateCriteria = new AnchorLocateCriteria();
-
     }
-
-
-    private bool isinit = false;
 
     void Update()
     {
-        if (!isinit)
-        {
-            isinit = true;
-            StartAzureSession();
-        }
         lock (dispatchQueue)
         {
             if (dispatchQueue.Count > 0)
@@ -84,12 +71,11 @@ public class AnchorModuleScript : MonoBehaviour
     #region Public Methods
     public async void StartAzureSession()
     {
-        debugger.AddDebugMessage("\nAnchorModuleScript.StartAzureSession()");
+        Debug.Log("\nAnchorModuleScript.StartAzureSession()");
 
-        // Notify AnchorFeedbackScript
-        OnStartASASession?.Invoke();
+        
 
-        debugger.AddDebugMessage("Starting Azure session... please wait...");
+        Debug.Log("Starting Azure session... please wait...");
 
         if (cloudManager.Session == null)
         {
@@ -99,20 +85,19 @@ public class AnchorModuleScript : MonoBehaviour
 
         // Starts the session if not already started
         await cloudManager.StartSessionAsync();
-        OnStartASASessionFinished?.Invoke();
-        debugger.AddDebugMessage("Azure session started successfully");
-
-        
+        // Notify AnchorFeedbackScript
+        OnStartASASession?.Invoke();
+        Debug.Log("Azure session started successfully");
     }
 
     public async void StopAzureSession()
     {
-        debugger.AddDebugMessage("\nAnchorModuleScript.StopAzureSession()");
+        Debug.Log("\nAnchorModuleScript.StopAzureSession()");
 
         // Notify AnchorFeedbackScript
         OnEndASASession?.Invoke();
 
-        debugger.AddDebugMessage("Stopping Azure session... please wait...");
+        Debug.Log("Stopping Azure session... please wait...");
 
         // Stops any existing session
         cloudManager.StopSession();
@@ -120,12 +105,12 @@ public class AnchorModuleScript : MonoBehaviour
         // Resets the current session if there is one, and waits for any active queries to be stopped
         await cloudManager.ResetSessionAsync();
 
-        debugger.AddDebugMessage("Azure session stopped successfully");
+        Debug.Log("Azure session stopped successfully");
     }
 
     public async void CreateAzureAnchor(GameObject theObject)
     {
-        debugger.AddDebugMessage("\nAnchorModuleScript.CreateAzureAnchor()");
+        Debug.Log("\nAnchorModuleScript.CreateAzureAnchor()");
 
         // Notify AnchorFeedbackScript
         OnCreateAnchorStarted?.Invoke();
@@ -145,12 +130,12 @@ public class AnchorModuleScript : MonoBehaviour
         // Check to see if we got the local XR anchor pointer
         if (localCloudAnchor.LocalAnchor == IntPtr.Zero)
         {
-            debugger.AddDebugMessage("Didn't get the local anchor...");
+            Debug.Log("Didn't get the local anchor...");
             return;
         }
         else
         {
-            debugger.AddDebugMessage("Local anchor created");
+            Debug.Log("Local anchor created");
         }
 
         // In this sample app we delete the cloud anchor explicitly, but here we show how to set an anchor to expire automatically
@@ -161,14 +146,14 @@ public class AnchorModuleScript : MonoBehaviour
         {
             await Task.Delay(330);
             float createProgress = cloudManager.SessionStatus.RecommendedForCreateProgress;
-            QueueOnUpdate(new Action(() => debugger.AddDebugMessage($"Move your device to capture more environment data: {createProgress:0%}")));
+            QueueOnUpdate(new Action(() => Debug.Log($"Move your device to capture more environment data: {createProgress:0%}")));
         }
 
         bool success;
 
         try
         {
-            debugger.AddDebugMessage("Creating Azure anchor... please wait...");
+            Debug.Log("Creating Azure anchor... please wait...");
 
             // Actually save
             await cloudManager.CreateAnchorAsync(localCloudAnchor);
@@ -182,19 +167,18 @@ public class AnchorModuleScript : MonoBehaviour
 
             if (success)
             {
-                debugger.AddDebugMessage($"Azure anchor with ID '{currentCloudAnchor.Identifier}' created successfully");
+                Debug.Log($"Azure anchor with ID '{currentCloudAnchor.Identifier}' created successfully");
 
                 // Notify AnchorFeedbackScript
-                
+                OnCreateAnchorSucceeded?.Invoke();
 
                 // Update the current Azure anchor ID
-                debugger.AddDebugMessage($"Current Azure anchor ID updated to '{currentCloudAnchor.Identifier}'");
+                Debug.Log($"Current Azure anchor ID updated to '{currentCloudAnchor.Identifier}'");
                 currentAzureAnchorID = currentCloudAnchor.Identifier;
-                OnCreateAnchorSucceeded?.Invoke();
             }
             else
             {
-                debugger.AddDebugMessage($"Failed to save cloud anchor with ID '{currentAzureAnchorID}' to Azure");
+                Debug.Log($"Failed to save cloud anchor with ID '{currentAzureAnchorID}' to Azure");
 
                 // Notify AnchorFeedbackScript
                 OnCreateAnchorFailed?.Invoke();
@@ -202,13 +186,13 @@ public class AnchorModuleScript : MonoBehaviour
         }
         catch (Exception ex)
         {
-            debugger.AddDebugMessage(ex.ToString());
+            Debug.Log(ex.ToString());
         }
     }
 
     public void RemoveLocalAnchor(GameObject theObject)
     {
-        debugger.AddDebugMessage("\nAnchorModuleScript.RemoveLocalAnchor()");
+        Debug.Log("\nAnchorModuleScript.RemoveLocalAnchor()");
 
         // Notify AnchorFeedbackScript
         OnRemoveLocalAnchor?.Invoke();
@@ -217,17 +201,17 @@ public class AnchorModuleScript : MonoBehaviour
 
         if (theObject.FindNativeAnchor() == null)
         {
-            debugger.AddDebugMessage("Local anchor deleted succesfully");
+            Debug.Log("Local anchor deleted succesfully");
         }
         else
         {
-            debugger.AddDebugMessage("Attempt to delete local anchor failed");
+            Debug.Log("Attempt to delete local anchor failed");
         }
     }
 
     public void FindAzureAnchor(string id = "")
     {
-        debugger.AddDebugMessage("\nAnchorModuleScript.FindAzureAnchor()");
+        Debug.Log("\nAnchorModuleScript.FindAzureAnchor()");
 
         if (id != "")
         {
@@ -246,30 +230,30 @@ public class AnchorModuleScript : MonoBehaviour
         }
         else
         {
-            debugger.AddDebugMessage("Current Azure anchor ID is empty");
+            Debug.Log("Current Azure anchor ID is empty");
             return;
         }
 
         anchorLocateCriteria.Identifiers = anchorsToFind.ToArray();
-        debugger.AddDebugMessage($"Anchor locate criteria configured to look for Azure anchor with ID '{currentAzureAnchorID}'");
+        Debug.Log($"Anchor locate criteria configured to look for Azure anchor with ID '{currentAzureAnchorID}'");
 
         // Start watching for Anchors
         if ((cloudManager != null) && (cloudManager.Session != null))
         {
             currentWatcher = cloudManager.Session.CreateWatcher(anchorLocateCriteria);
-            debugger.AddDebugMessage("Watcher created");
-            debugger.AddDebugMessage("Looking for Azure anchor... please wait...");
+            Debug.Log("Watcher created");
+            Debug.Log("Looking for Azure anchor... please wait...");
         }
         else
         {
-            debugger.AddDebugMessage("Attempt to create watcher failed, no session exists");
+            Debug.Log("Attempt to create watcher failed, no session exists");
             currentWatcher = null;
         }
     }
 
     public async void DeleteAzureAnchor()
     {
-        debugger.AddDebugMessage("\nAnchorModuleScript.DeleteAzureAnchor()");
+        Debug.Log("\nAnchorModuleScript.DeleteAzureAnchor()");
 
         // Notify AnchorFeedbackScript
         OnDeleteASAAnchor?.Invoke();
@@ -278,12 +262,12 @@ public class AnchorModuleScript : MonoBehaviour
         await cloudManager.DeleteAnchorAsync(currentCloudAnchor);
         currentCloudAnchor = null;
 
-        debugger.AddDebugMessage("Azure anchor deleted successfully");
+        Debug.Log("Azure anchor deleted successfully");
     }
 
     public void SaveAzureAnchorIdToDisk()
     {
-        debugger.AddDebugMessage("\nAnchorModuleScript.SaveAzureAnchorIDToDisk()");
+        Debug.Log("\nAnchorModuleScript.SaveAzureAnchorIDToDisk()");
 
         string filename = "SavedAzureAnchorID.txt";
         string path = Application.persistentDataPath;
@@ -296,12 +280,12 @@ public class AnchorModuleScript : MonoBehaviour
         string filePath = Path.Combine(path, filename);
         File.WriteAllText(filePath, currentAzureAnchorID);
 
-        debugger.AddDebugMessage($"Current Azure anchor ID '{currentAzureAnchorID}' successfully saved to path '{filePath}'");
+        Debug.Log($"Current Azure anchor ID '{currentAzureAnchorID}' successfully saved to path '{filePath}'");
     }
 
     public void GetAzureAnchorIdFromDisk()
     {
-        debugger.AddDebugMessage("\nAnchorModuleScript.LoadAzureAnchorIDFromDisk()");
+        Debug.Log("\nAnchorModuleScript.LoadAzureAnchorIDFromDisk()");
 
         string filename = "SavedAzureAnchorID.txt";
         string path = Application.persistentDataPath;
@@ -314,12 +298,12 @@ public class AnchorModuleScript : MonoBehaviour
         string filePath = Path.Combine(path, filename);
         currentAzureAnchorID = File.ReadAllText(filePath);
 
-        debugger.AddDebugMessage($"Current Azure anchor ID successfully updated with saved Azure anchor ID '{currentAzureAnchorID}' from path '{path}'");
+        Debug.Log($"Current Azure anchor ID successfully updated with saved Azure anchor ID '{currentAzureAnchorID}' from path '{path}'");
     }
 
     public void ShareAzureAnchorIdToNetwork()
     {
-        debugger.AddDebugMessage("\nAnchorModuleScript.ShareAzureAnchorID()");
+        Debug.Log("\nAnchorModuleScript.ShareAzureAnchorID()");
 
         string filename = "SharedAzureAnchorID." + publicSharingPin;
         string path = Application.persistentDataPath;
@@ -332,13 +316,13 @@ public class AnchorModuleScript : MonoBehaviour
         string filePath = Path.Combine(path, filename);
         File.WriteAllText(filePath, currentAzureAnchorID);
 
-        debugger.AddDebugMessage($"Current Azure anchor ID '{currentAzureAnchorID}' successfully saved to path '{filePath}'");
+        Debug.Log($"Current Azure anchor ID '{currentAzureAnchorID}' successfully saved to path '{filePath}'");
 
         try
         {
             var client = new RestClient("http://167.99.111.15:8090");
 
-            debugger.AddDebugMessage($"Connecting to network client '{client}'... please wait...");
+            Debug.Log($"Connecting to network client '{client}'... please wait...");
 
             var request = new RestRequest("/uploadFile.php", Method.POST);
             request.AddHeader("Accept", "application/json");
@@ -348,35 +332,31 @@ public class AnchorModuleScript : MonoBehaviour
 
             var httpResponse = client.Execute(request);
 
-            debugger.AddDebugMessage("Uploading file... please wait...");
+            Debug.Log("Uploading file... please wait...");
 
             string json = httpResponse.Content.ToString();
         }
         catch (Exception ex)
         {
-            debugger.AddDebugMessage(string.Format("Exception: {0}", ex.Message));
+            Debug.Log(string.Format("Exception: {0}", ex.Message));
             throw;
         }
 
-        debugger.AddDebugMessage($"Current Azure anchor ID '{currentAzureAnchorID}' shared successfully");
+        Debug.Log($"Current Azure anchor ID '{currentAzureAnchorID}' shared successfully");
     }
 
     public void GetAzureAnchorIdFromNetwork()
     {
-        debugger.AddDebugMessage("\nAnchorModuleScript.GetSharedAzureAnchorID()");
+        Debug.Log("\nAnchorModuleScript.GetSharedAzureAnchorID()");
 
         StartCoroutine(GetSharedAzureAnchorIDCoroutine(publicSharingPin));
     }
     #endregion
-    public Pose GetCurrentAnchorTransform()
-    {
-        return currentAnchorTransform;
-    }
-    
+
     #region Event Handlers
     private void CloudManager_AnchorLocated(object sender, AnchorLocatedEventArgs args)
     {
-        QueueOnUpdate(new Action(() => debugger.AddDebugMessage($"Anchor recognized as a possible Azure anchor")));
+        QueueOnUpdate(new Action(() => Debug.Log($"Anchor recognized as a possible Azure anchor")));
 
         if (args.Status == LocateAnchorStatus.Located || args.Status == LocateAnchorStatus.AlreadyTracked)
         {
@@ -384,7 +364,7 @@ public class AnchorModuleScript : MonoBehaviour
 
             QueueOnUpdate(() =>
             {
-                debugger.AddDebugMessage($"Azure anchor located successfully");
+                Debug.Log($"Azure anchor located successfully");
 
                 // Notify AnchorFeedbackScript
                 OnASAAnchorLocated?.Invoke();
@@ -398,7 +378,6 @@ public class AnchorModuleScript : MonoBehaviour
                 // Notify AnchorFeedbackScript
                 OnCreateLocalAnchor?.Invoke();
 
-                
                 // On HoloLens, if we do not have a cloudAnchor already, we will have already positioned the
                 // object based on the passed in worldPos/worldRot and attached a new world anchor,
                 // so we are ready to commit the anchor to the cloud if requested.
@@ -406,17 +385,26 @@ public class AnchorModuleScript : MonoBehaviour
                 // which will position the object automatically.
                 if (currentCloudAnchor != null)
                 {
-                    debugger.AddDebugMessage("Local anchor position successfully set to Azure anchor position");
-                    currentAnchorTransform = currentCloudAnchor.GetPose();
-                    debugger.AddDebugMessage("Current Location of Anchor Is: " + currentAnchorTransform.position.ToString());
+                    Debug.Log("Local anchor position successfully set to Azure anchor position");
+
                     //gameObject.GetComponent<UnityEngine.XR.WSA.WorldAnchor>().SetNativeSpatialAnchorPtr(currentCloudAnchor.LocalAnchor);
+                    Pose anchorPose = Pose.identity;
+                    anchorPose = currentCloudAnchor.GetPose();
+
+                    Debug.Log($"Setting object to anchor pose with position '{anchorPose.position} and rotation '{anchorPose.rotation}'");
+                    transform.position = anchorPose.position;
+                    transform.rotation = anchorPose.rotation;
+
+                    gameObject.CreateNativeAnchor();
+
+                    OnCreateLocalAnchor?.Invoke();
                 }
 
 #elif UNITY_ANDROID || UNITY_IOS
                 Pose anchorPose = Pose.identity;
                 anchorPose = currentCloudAnchor.GetPose();
 
-                debugger.AddDebugMessage($"Setting object to anchor pose with position '{anchorPose.position}' and rotation '{anchorPose.rotation}'");
+                Debug.Log($"Setting object to anchor pose with position '{anchorPose.position}' and rotation '{anchorPose.rotation}'");
                 transform.position = anchorPose.position;
                 transform.rotation = anchorPose.rotation;
 
@@ -431,7 +419,7 @@ public class AnchorModuleScript : MonoBehaviour
         }
         else
         {
-            QueueOnUpdate(new Action(() => debugger.AddDebugMessage($"Attempt to locate Anchor with ID '{args.Identifier}' failed, locate anchor status was not 'Located' but '{args.Status}'")));
+            QueueOnUpdate(new Action(() => Debug.Log($"Attempt to locate Anchor with ID '{args.Identifier}' failed, locate anchor status was not 'Located' but '{args.Status}'")));
         }
     }
     #endregion
@@ -449,18 +437,18 @@ public class AnchorModuleScript : MonoBehaviour
     {
         string url = "http://167.99.111.15:8090/file-uploads/static/file." + sharingPin.ToLower();
 
-        debugger.AddDebugMessage($"Looking for url '{url}'... please wait...");
+        Debug.Log($"Looking for url '{url}'... please wait...");
 
         using (UnityWebRequest www = UnityWebRequest.Get(url))
         {
             yield return www.SendWebRequest();
             if (www.isNetworkError || www.isHttpError)
             {
-                debugger.AddDebugMessage(www.error);
+                Debug.Log(www.error);
             }
             else
             {
-                debugger.AddDebugMessage("Downloading... please wait...");
+                Debug.Log("Downloading... please wait...");
 
                 string filename = "SharedAzureAnchorID." + publicSharingPin;
                 string path = Application.persistentDataPath;
@@ -471,7 +459,7 @@ public class AnchorModuleScript : MonoBehaviour
 #endif
                 currentAzureAnchorID = www.downloadHandler.text;
 
-                debugger.AddDebugMessage($"Current Azure anchor ID successfully updated with shared Azure anchor ID '{currentAzureAnchorID}' url");
+                Debug.Log($"Current Azure anchor ID successfully updated with shared Azure anchor ID '{currentAzureAnchorID}' url");
 
                 string filePath = Path.Combine(path, filename);
                 File.WriteAllText(filePath, currentAzureAnchorID);
@@ -483,7 +471,6 @@ public class AnchorModuleScript : MonoBehaviour
     #region Public Events
     public delegate void StartASASessionDelegate();
     public event StartASASessionDelegate OnStartASASession;
-    public event StartASASessionDelegate OnStartASASessionFinished;
 
     public delegate void EndASASessionDelegate();
     public event EndASASessionDelegate OnEndASASession;

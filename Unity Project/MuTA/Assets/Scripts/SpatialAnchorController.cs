@@ -16,9 +16,6 @@ public class SpatialAnchorController : MonoBehaviour
     public event Notify onAnchorLocationFound;
     public event Notify onAnchorLocationNotFound;
 
-    [SerializeField]
-    private Debugger debugger;
-
     // Start is called before the first frame update
     void Start()
     {
@@ -26,7 +23,7 @@ public class SpatialAnchorController : MonoBehaviour
         networkUtils.onAnchorNotFound += onAnchorIDNotFound;
         networkUtils.onAnchorUpdate += onAnchorIDFound;
         anchorModule = anchorObject.GetComponent<AnchorModuleScript>();
-        anchorModule.OnStartASASessionFinished += startAzureAfterInit;
+        anchorModule.OnStartASASession += startAzureAfterInit;
     }
     
     // Update is called once per frame
@@ -52,13 +49,13 @@ public class SpatialAnchorController : MonoBehaviour
 
     private void startAzureAfterInit()
     {
-        debugger.AddDebugMessage("Init Finished");
+        Debug.Log("Init Finished");
         networkUtils.getAnchorID();
     }
 
     private void onAnchorIDNotFound()
     {
-        debugger.AddDebugMessage("Anchor ID not found, proceeed creating anchor...");
+        Debug.Log("Anchor ID not found, proceeed creating anchor...");
         anchorModule.OnCreateAnchorSucceeded += onCreateAnchorSucceeded;
         anchorModule.CreateAzureAnchor(anchorObject);
     }
@@ -66,22 +63,22 @@ public class SpatialAnchorController : MonoBehaviour
     private void onAnchorIDFound()
     {
         string anchorID = networkUtils.getAnchorData().id;
-        debugger.AddDebugMessage("Anchor ID Found to be: " + anchorID);
+        Debug.Log("Anchor ID Found to be: " + anchorID);
         anchorModule.OnFindASAAnchor += onAnchorFound;
         anchorModule.FindAzureAnchor(anchorID);
     }
 
     private void onAnchorFound()
     {
-        debugger.AddDebugMessage(anchorModule.currentAzureAnchorID + " Found");
-        anchorTransform = anchorModule.GetCurrentAnchorTransform();
-        debugger.AddDebugMessage("Current Position is: " + anchorTransform.position);
+        Debug.Log(anchorModule.currentAzureAnchorID + " Found");
+        //anchorTransform = anchorModule.GetCurrentAnchorTransform();
+        Debug.Log("Current Position is: " + anchorTransform.position);
         onAnchorLocationFound?.Invoke();
     }
 
     private void onCreateAnchorSucceeded()
     {
-        debugger.AddDebugMessage("Successfully created anchor with ID: "+ anchorModule.currentAzureAnchorID);
+        Debug.Log("Successfully created anchor with ID: "+ anchorModule.currentAzureAnchorID);
         networkUtils.setAnchorID(anchorModule.currentAzureAnchorID);
     }
     #endregion

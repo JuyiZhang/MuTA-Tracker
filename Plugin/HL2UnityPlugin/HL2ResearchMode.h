@@ -38,6 +38,7 @@ namespace winrt::HL2UnityPlugin::implementation
         void InitializeAccelSensor();
         void InitializeGyroSensor();
         void InitializeMagSensor();
+        void InitializeSpatialCoordinateSystem();
 
         void StartDepthSensorLoop(bool reconstructPointCloud = true);
         void StartLongDepthSensorLoop(bool reconstructPointCloud = true);
@@ -85,9 +86,12 @@ namespace winrt::HL2UnityPlugin::implementation
         com_array<float> GetPointCloudBuffer();
         com_array<float> GetLongThrowPointCloudBuffer();
         com_array<float> GetCenterPoint();
+        
         std::mutex mu;
 
     private:
+        winrt::Windows::Perception::Spatial::SpatialLocator m_locator{ nullptr };
+        winrt::Windows::Perception::Spatial::SpatialStationaryFrameOfReference m_referenceFrame{ nullptr };
         float* m_pointCloud = nullptr;
         int m_pointcloudLength = 0;
         float* m_longThrowPointCloud = nullptr;
@@ -128,7 +132,7 @@ namespace winrt::HL2UnityPlugin::implementation
         IResearchModeSensorDevice* m_pSensorDevice = nullptr;
         std::vector<ResearchModeSensorDescriptor> m_sensorDescriptors;
         IResearchModeSensorDeviceConsent* m_pSensorDeviceConsent = nullptr;
-        Windows::Perception::Spatial::SpatialLocator m_locator = 0;
+        //Windows::Perception::Spatial::SpatialLocator m_locator = 0;
         Windows::Perception::Spatial::SpatialCoordinateSystem m_refFrame = nullptr;
         std::atomic_int m_depthBufferSize = 0;
         std::atomic_int m_longDepthBufferSize = 0;

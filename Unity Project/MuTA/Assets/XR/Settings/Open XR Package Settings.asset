@@ -54,7 +54,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   m_enabled: 0
   nameUi: Mixed Reality Features
-  version: 1.7.2
+  version: 1.8.1
   featureIdInternal: com.microsoft.openxr.feature.hololens
   openxrExtensionStrings: XR_MSFT_holographic_window_attachment XR_KHR_win32_convert_performance_counter_time
     XR_MSFT_unbounded_reference_space XR_MSFT_spatial_anchor XR_MSFT_secondary_view_configuration
@@ -80,8 +80,8 @@ MonoBehaviour:
   m_Name: HPMixedRealityControllerProfile WSA
   m_EditorClassIdentifier: 
   m_enabled: 0
-  nameUi: HP Reverb G2 Controller Profile
-  version: 1.7.2
+  nameUi: HP Reverb G2 Controller Profile (Deprecated)
+  version: 1.8.1
   featureIdInternal: com.microsoft.openxr.feature.interaction.hpmixedrealitycontroller
   openxrExtensionStrings: XR_EXT_hp_mixed_reality_controller
   company: Microsoft
@@ -154,7 +154,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   m_enabled: 1
   nameUi: Mixed Reality Features
-  version: 1.7.2
+  version: 1.8.1
   featureIdInternal: com.microsoft.openxr.feature.hololens
   openxrExtensionStrings: XR_MSFT_holographic_window_attachment XR_KHR_win32_convert_performance_counter_time
     XR_MSFT_unbounded_reference_space XR_MSFT_spatial_anchor XR_MSFT_secondary_view_configuration
@@ -167,6 +167,76 @@ MonoBehaviour:
   disableFirstPersonObserver: 0
   enablePoseUpdateOnBeforeRender: 0
   validationRuleTarget: 1
+--- !u!114 &-5245531437929806875
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9f34c86d1a130cc45a438373e1e8a4fc, type: 3}
+  m_Name: PlayModeRemotingPlugin Standalone
+  m_EditorClassIdentifier: 
+  m_enabled: 0
+  nameUi: Holographic Remoting for Play Mode
+  version: 1.7.2
+  featureIdInternal: com.microsoft.openxr.feature.playmoderemoting
+  openxrExtensionStrings: XR_MSFT_holographic_remoting XR_MSFT_holographic_remoting_speech
+  company: Microsoft
+  priority: -100
+  required: 0
+  m_remoteHostName: 
+  m_remoteHostPort: 8265
+  m_maxBitrate: 20000
+  m_videoCodec: 0
+  m_enableAudio: 0
+--- !u!114 &-5191654120126762129
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 2d2e2731103cdda44af77955a0b4814c, type: 3}
+  m_Name: AppRemotingPlugin WSA
+  m_EditorClassIdentifier: 
+  m_enabled: 0
+  nameUi: Holographic Remoting remote app
+  version: 1.7.2
+  featureIdInternal: com.microsoft.openxr.feature.appremoting
+  openxrExtensionStrings: XR_MSFT_holographic_remoting XR_MSFT_holographic_remoting_speech
+  company: Microsoft
+  priority: -100
+  required: 0
+--- !u!114 &-4656688515684704386
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c79c911b38743a649b1c1eddb5097202, type: 3}
+  m_Name: HandTrackingFeaturePlugin WSA
+  m_EditorClassIdentifier: 
+  m_enabled: 0
+  nameUi: Hand Tracking
+  version: 1.7.2
+  featureIdInternal: com.microsoft.openxr.feature.handtracking
+  openxrExtensionStrings: XR_EXT_hand_tracking XR_EXT_hand_joints_motion_range XR_MSFT_hand_tracking_mesh
+  company: Microsoft
+  priority: 0
+  required: 0
+  leftHandTrackingOptions:
+    motionRange: 0
+  rightHandTrackingOptions:
+    motionRange: 0
+  questHandTrackingMode: 1
 --- !u!114 &-4500312242069338394
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -180,22 +250,22 @@ MonoBehaviour:
   m_Name: WSA
   m_EditorClassIdentifier: 
   features:
-  - {fileID: -4418053987904810940}
+  - {fileID: -5191654120126762129}
   - {fileID: -9904654111485253}
   - {fileID: 2113290239780828041}
   - {fileID: 1278545436881522408}
   - {fileID: 1781844007533375711}
   - {fileID: -7902004838397413764}
-  - {fileID: -4000716737747612529}
-  - {fileID: -7317441663416220582}
+  - {fileID: -4656688515684704386}
+  - {fileID: -2253519403534606}
   - {fileID: -1237558753691745548}
   - {fileID: 9013464448160543049}
   - {fileID: -2304424510610173654}
   - {fileID: 6339121758379363746}
   - {fileID: -2387954255744925709}
   - {fileID: -228412454539493825}
-  - {fileID: -5445926700863635338}
-  - {fileID: 5702047787925050961}
+  - {fileID: 3994573257015157671}
+  - {fileID: -1882932587756798690}
   - {fileID: -3238793016393096298}
   - {fileID: -4468259107841498993}
   - {fileID: -112514353753250143}
@@ -256,7 +326,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   m_enabled: 0
   nameUi: Holographic Remoting remote app
-  version: 1.7.2
+  version: 1.8.1
   featureIdInternal: com.microsoft.openxr.feature.appremoting
   openxrExtensionStrings: XR_MSFT_holographic_remoting XR_MSFT_holographic_remoting_speech
   company: Microsoft
@@ -296,7 +366,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   m_enabled: 1
   nameUi: Hand Tracking
-  version: 1.7.2
+  version: 1.8.1
   featureIdInternal: com.microsoft.openxr.feature.handtracking
   openxrExtensionStrings: XR_EXT_hand_tracking XR_EXT_hand_joints_motion_range XR_MSFT_hand_tracking_mesh
   company: Microsoft
@@ -387,6 +457,26 @@ MonoBehaviour:
   company: Unity
   priority: 0
   required: 0
+--- !u!114 &-1882932587756798690
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0c8f1ce8139888c4ab621f6b3c8bb558, type: 3}
+  m_Name: MotionControllerFeaturePlugin WSA
+  m_EditorClassIdentifier: 
+  m_enabled: 0
+  nameUi: Motion Controller Model
+  version: 1.7.2
+  featureIdInternal: com.microsoft.openxr.feature.controller
+  openxrExtensionStrings: XR_MSFT_controller_model XR_FB_render_model
+  company: Microsoft
+  priority: 0
+  required: 0
 --- !u!114 &-1306564477698424927
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -401,7 +491,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   m_enabled: 0
   nameUi: Holographic Remoting for Play Mode
-  version: 1.7.2
+  version: 1.8.1
   featureIdInternal: com.microsoft.openxr.feature.playmoderemoting
   openxrExtensionStrings: XR_MSFT_holographic_remoting XR_MSFT_holographic_remoting_speech
   company: Microsoft
@@ -432,6 +522,31 @@ MonoBehaviour:
   company: Unity
   priority: 0
   required: 0
+--- !u!114 &-1200906036388707852
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c79c911b38743a649b1c1eddb5097202, type: 3}
+  m_Name: HandTrackingFeaturePlugin Standalone
+  m_EditorClassIdentifier: 
+  m_enabled: 0
+  nameUi: Hand Tracking
+  version: 1.7.2
+  featureIdInternal: com.microsoft.openxr.feature.handtracking
+  openxrExtensionStrings: XR_EXT_hand_tracking XR_EXT_hand_joints_motion_range XR_MSFT_hand_tracking_mesh
+  company: Microsoft
+  priority: 0
+  required: 0
+  leftHandTrackingOptions:
+    motionRange: 0
+  rightHandTrackingOptions:
+    motionRange: 0
+  questHandTrackingMode: 1
 --- !u!114 &-843670532025011549
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -467,7 +582,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   m_enabled: 0
   nameUi: Hand Tracking
-  version: 1.7.2
+  version: 1.8.1
   featureIdInternal: com.microsoft.openxr.feature.handtracking
   openxrExtensionStrings: XR_EXT_hand_tracking XR_EXT_hand_joints_motion_range XR_MSFT_hand_tracking_mesh
   company: Microsoft
@@ -560,6 +675,26 @@ MonoBehaviour:
   company: Unity
   priority: 0
   required: 0
+--- !u!114 &-2253519403534606
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3482401f887b8864183e401715462f46, type: 3}
+  m_Name: HPMixedRealityControllerProfile WSA
+  m_EditorClassIdentifier: 
+  m_enabled: 0
+  nameUi: HP Reverb G2 Controller Profile
+  version: 1.7.2
+  featureIdInternal: com.microsoft.openxr.feature.interaction.hpmixedrealitycontroller
+  openxrExtensionStrings: XR_EXT_hp_mixed_reality_controller
+  company: Microsoft
+  priority: 0
+  required: 0
 --- !u!114 &11400000
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -598,6 +733,33 @@ MonoBehaviour:
   required: 0
   cacheSize: 1048576
   perThreadCacheSize: 51200
+--- !u!114 &742809223508150629
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3f8ec2975f18d5e479159feb34b4dc86, type: 3}
+  m_Name: MixedRealityFeaturePlugin Standalone
+  m_EditorClassIdentifier: 
+  m_enabled: 0
+  nameUi: Mixed Reality Features
+  version: 1.7.2
+  featureIdInternal: com.microsoft.openxr.feature.hololens
+  openxrExtensionStrings: XR_MSFT_holographic_window_attachment XR_KHR_win32_convert_performance_counter_time
+    XR_MSFT_unbounded_reference_space XR_MSFT_spatial_anchor XR_MSFT_secondary_view_configuration
+    XR_MSFT_first_person_observer XR_MSFT_spatial_graph_bridge XR_MSFT_perception_anchor_interop
+    XR_MSFT_spatial_anchor_persistence XR_MSFT_scene_understanding XR_MSFT_scene_understanding_serialization
+    XR_MSFT_spatial_anchor_export_preview XR_MSFT_composition_layer_reprojection
+  company: Microsoft
+  priority: 0
+  required: 1
+  disableFirstPersonObserver: 0
+  enablePoseUpdateOnBeforeRender: 0
+  validationRuleTarget: 0
 --- !u!114 &781319646456930865
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -751,6 +913,26 @@ MonoBehaviour:
   company: Unity
   priority: 0
   required: 0
+--- !u!114 &3322927866545954878
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3482401f887b8864183e401715462f46, type: 3}
+  m_Name: HPMixedRealityControllerProfile Standalone
+  m_EditorClassIdentifier: 
+  m_enabled: 0
+  nameUi: HP Reverb G2 Controller Profile
+  version: 1.7.2
+  featureIdInternal: com.microsoft.openxr.feature.interaction.hpmixedrealitycontroller
+  openxrExtensionStrings: XR_EXT_hp_mixed_reality_controller
+  company: Microsoft
+  priority: 0
+  required: 0
 --- !u!114 &3848743919387538776
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -771,6 +953,33 @@ MonoBehaviour:
   company: Unity
   priority: 0
   required: 0
+--- !u!114 &3994573257015157671
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3f8ec2975f18d5e479159feb34b4dc86, type: 3}
+  m_Name: MixedRealityFeaturePlugin WSA
+  m_EditorClassIdentifier: 
+  m_enabled: 1
+  nameUi: Mixed Reality Features
+  version: 1.7.2
+  featureIdInternal: com.microsoft.openxr.feature.hololens
+  openxrExtensionStrings: XR_MSFT_holographic_window_attachment XR_KHR_win32_convert_performance_counter_time
+    XR_MSFT_unbounded_reference_space XR_MSFT_spatial_anchor XR_MSFT_secondary_view_configuration
+    XR_MSFT_first_person_observer XR_MSFT_spatial_graph_bridge XR_MSFT_perception_anchor_interop
+    XR_MSFT_spatial_anchor_persistence XR_MSFT_scene_understanding XR_MSFT_scene_understanding_serialization
+    XR_MSFT_spatial_anchor_export_preview XR_MSFT_composition_layer_reprojection
+  company: Microsoft
+  priority: 0
+  required: 1
+  disableFirstPersonObserver: 0
+  enablePoseUpdateOnBeforeRender: 0
+  validationRuleTarget: 0
 --- !u!114 &4539337127938800228
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -791,6 +1000,26 @@ MonoBehaviour:
   company: Unity
   priority: 0
   required: 0
+--- !u!114 &4706397888056248828
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0c8f1ce8139888c4ab621f6b3c8bb558, type: 3}
+  m_Name: MotionControllerFeaturePlugin Standalone
+  m_EditorClassIdentifier: 
+  m_enabled: 0
+  nameUi: Motion Controller Model
+  version: 1.7.2
+  featureIdInternal: com.microsoft.openxr.feature.controller
+  openxrExtensionStrings: XR_MSFT_controller_model XR_FB_render_model
+  company: Microsoft
+  priority: 0
+  required: 0
 --- !u!114 &5702047787925050961
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -805,7 +1034,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   m_enabled: 1
   nameUi: Motion Controller Model
-  version: 1.7.2
+  version: 1.8.1
   featureIdInternal: com.microsoft.openxr.feature.controller
   openxrExtensionStrings: XR_MSFT_controller_model XR_FB_render_model
   company: Microsoft
@@ -864,12 +1093,32 @@ MonoBehaviour:
   m_Name: HPMixedRealityControllerProfile Standalone
   m_EditorClassIdentifier: 
   m_enabled: 0
-  nameUi: HP Reverb G2 Controller Profile
-  version: 1.7.2
+  nameUi: HP Reverb G2 Controller Profile (Deprecated)
+  version: 1.8.1
   featureIdInternal: com.microsoft.openxr.feature.interaction.hpmixedrealitycontroller
   openxrExtensionStrings: XR_EXT_hp_mixed_reality_controller
   company: Microsoft
   priority: 0
+  required: 0
+--- !u!114 &7005607087156791445
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 2d2e2731103cdda44af77955a0b4814c, type: 3}
+  m_Name: AppRemotingPlugin Standalone
+  m_EditorClassIdentifier: 
+  m_enabled: 0
+  nameUi: Holographic Remoting remote app
+  version: 1.7.2
+  featureIdInternal: com.microsoft.openxr.feature.appremoting
+  openxrExtensionStrings: XR_MSFT_holographic_remoting XR_MSFT_holographic_remoting_speech
+  company: Microsoft
+  priority: -100
   required: 0
 --- !u!114 &7033654120512350596
 MonoBehaviour:
@@ -884,26 +1133,26 @@ MonoBehaviour:
   m_Name: Standalone
   m_EditorClassIdentifier: 
   features:
-  - {fileID: 7778677795258762799}
+  - {fileID: 7005607087156791445}
   - {fileID: -2244923349288437605}
   - {fileID: -5457938066073003251}
   - {fileID: 781319646456930865}
   - {fileID: 3848743919387538776}
   - {fileID: -4011485239733695948}
-  - {fileID: -659130604323553499}
-  - {fileID: 6956685495270655603}
+  - {fileID: -1200906036388707852}
+  - {fileID: 3322927866545954878}
   - {fileID: 3001419720996111382}
   - {fileID: 1256263367853437977}
   - {fileID: 4539337127938800228}
   - {fileID: 3317270391731276674}
   - {fileID: 7872308701108010824}
   - {fileID: -5698073333937502147}
-  - {fileID: -7453872946049910364}
+  - {fileID: 742809223508150629}
   - {fileID: -843670532025011549}
-  - {fileID: 8890230495556703065}
+  - {fileID: 4706397888056248828}
   - {fileID: -4443129771830269862}
   - {fileID: 6761335846945412973}
-  - {fileID: -1306564477698424927}
+  - {fileID: -5245531437929806875}
   - {fileID: 66271227149824771}
   - {fileID: -79390857904537017}
   m_renderMode: 1
@@ -922,7 +1171,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   m_enabled: 0
   nameUi: Holographic Remoting remote app
-  version: 1.7.2
+  version: 1.8.1
   featureIdInternal: com.microsoft.openxr.feature.appremoting
   openxrExtensionStrings: XR_MSFT_holographic_remoting XR_MSFT_holographic_remoting_speech
   company: Microsoft
@@ -962,7 +1211,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   m_enabled: 0
   nameUi: Motion Controller Model
-  version: 1.7.2
+  version: 1.8.1
   featureIdInternal: com.microsoft.openxr.feature.controller
   openxrExtensionStrings: XR_MSFT_controller_model XR_FB_render_model
   company: Microsoft

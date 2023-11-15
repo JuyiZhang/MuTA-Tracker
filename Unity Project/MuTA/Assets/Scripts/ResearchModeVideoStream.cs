@@ -23,7 +23,6 @@ public class ResearchModeVideoStream : MonoBehaviour
 
     [SerializeField] bool enablePointCloud = true;
     [SerializeField] Camera camera;
-    [SerializeField] private GameObject debugger;
 
     SpatialAnchorController anchorController;
 
@@ -41,8 +40,6 @@ public class ResearchModeVideoStream : MonoBehaviour
 
     private bool continuousSend = false;
 
-    private Debugger currentDebugger;
-
     
 
 #if ENABLE_WINMD_SUPPORT
@@ -51,21 +48,23 @@ public class ResearchModeVideoStream : MonoBehaviour
 
     private void Awake()
     {
-#if ENABLE_WINMD_SUPPORT
 #if UNITY_2020_1_OR_NEWER // note: Unity 2021.2 and later not supported
+#if ENABLE_WINMD_SUPPORT
         IntPtr WorldOriginPtr = UnityEngine.XR.WindowsMR.WindowsMREnvironment.OriginSpatialCoordinateSystem;
         unityWorldOrigin = Marshal.GetObjectForIUnknown(WorldOriginPtr) as Windows.Perception.Spatial.SpatialCoordinateSystem;
         unityWorldOrigin = Windows.Perception.Spatial.SpatialLocator.GetDefault().CreateStationaryFrameOfReferenceAtCurrentLocation().CoordinateSystem;
+#endif
 #else
+#if ENABLE_WINMD_SUPPORT
         IntPtr WorldOriginPtr = UnityEngine.XR.WSA.WorldManager.GetNativeISpatialCoordinateSystemPtr();
         unityWorldOrigin = Marshal.GetObjectForIUnknown(WorldOriginPtr) as Windows.Perception.Spatial.SpatialCoordinateSystem;
 #endif
 #endif
+
     }
     void Start()
     {
-
-        currentDebugger = debugger.GetComponent<Debugger>();
+        Debug.Log("Research Mode Init");
 
         if (longDepthPreviewPlane != null)
         {
@@ -85,7 +84,7 @@ public class ResearchModeVideoStream : MonoBehaviour
         longAbImagePreviewPlane.SetActive(true);
 
         tcpClient = GetComponent<TCPClient>();
-        anchorController = GetComponent<SpatialAnchorController>();
+        
 
 #if ENABLE_WINMD_SUPPORT
         researchMode = new HL2ResearchMode();
@@ -100,8 +99,9 @@ public class ResearchModeVideoStream : MonoBehaviour
         researchMode.StartLongDepthSensorLoop(enablePointCloud);
 
 #endif
-        currentDebugger.AddDebugMessage("Successfully initiated Hololens Researchmode");
+        Debug.Log("Successfully initiated Hololens Researchmode");
         tcpClient.ConnectToServerEvent();
+        anchorController = GetComponent<SpatialAnchorController>();
     }
 
     bool startRealtimePreview = true;
@@ -178,14 +178,14 @@ public class ResearchModeVideoStream : MonoBehaviour
 
 
 
-    #region Button Event Functions
+#region Button Event Functions
 
     public void SendLongDepthSensorCombined()
     {
         Vector3 currentPosition = camera.transform.position - anchorController.getAnchorPosition();
         Vector3 currentRotation = camera.transform.rotation.eulerAngles - anchorController.getAnchorRotation();
-        currentDebugger.AddDebugMessage("Sending Data...");
-        currentDebugger.AddDebugMessage("Current Position is: " + currentPosition + ". Current Rotation is: " + currentRotation);
+        Debug.Log("Sending Data...");
+        Debug.Log("Current Position is: " + currentPosition + ". Current Rotation is: " + currentRotation);
 #if WINDOWS_UWP
         long timestamp = GetCurrentTimestampUnix();
         var depthMap = researchMode.GetLongDepthMapBuffer();
@@ -204,11 +204,11 @@ public class ResearchModeVideoStream : MonoBehaviour
     }
     public void startContinuousSend()
     {
-        currentDebugger.AddDebugMessage("The continuous send is now " + continuousSend.ToString());
+        Debug.Log("The continuous send is now " + continuousSend.ToString());
         continuousSend = !continuousSend;
     }
 
-    #endregion
+#endregion
     private void OnApplicationFocus(bool focus)
     {
         if (!focus) StopSensorsEvent();

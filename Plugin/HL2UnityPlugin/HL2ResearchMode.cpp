@@ -66,6 +66,7 @@ namespace winrt::HL2UnityPlugin::implementation
 
     void HL2ResearchMode::InitializeDepthSensor() 
     {
+        InitializeSpatialCoordinateSystem();
         for (auto sensorDescriptor : m_sensorDescriptors)
         {
             if (sensorDescriptor.sensorType == DEPTH_AHAT)
@@ -146,6 +147,12 @@ namespace winrt::HL2UnityPlugin::implementation
                 winrt::check_hresult(m_pSensorDevice->GetSensor(sensorDescriptor.sensorType, &m_magSensor));
             }
         }
+    }
+
+    void HL2ResearchMode::InitializeSpatialCoordinateSystem() {
+        m_locator = winrt::Windows::Perception::Spatial::SpatialLocator::GetDefault();
+        m_referenceFrame = m_locator.CreateStationaryFrameOfReferenceAtCurrentLocation();
+        m_refFrame = m_referenceFrame.CoordinateSystem();
     }
 
     void HL2ResearchMode::StartDepthSensorLoop(bool reconstructPointCloud)

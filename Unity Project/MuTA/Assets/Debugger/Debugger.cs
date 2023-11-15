@@ -14,10 +14,16 @@ public class Debugger: MonoBehaviour
     private void Start()
     {
         debugText.text = "Debugging started";
+        Application.logMessageReceived += AddLogMessage;
     }
+
+    public void AddLogMessage(string message, string stackTrace, LogType type)
+    {
+        AddDebugMessage(message);
+    }
+
     public void AddDebugMessage(string debugMsg)
     {
-        Debug.Log(debugMsg);
         if (debugMessageHistory.Count >= 10)
         {
             debugMessageHistory.Clear();

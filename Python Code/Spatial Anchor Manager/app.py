@@ -36,6 +36,9 @@ def addAnchor():
 def removeAnchor():
     if os.path.exists("anchor_data.json"):
         os.remove("anchor_data.json")
+        return "Remove Success"
+    else:
+        return "No anchor is present"
 
 @app.route("/query_anchor")
 def queryAnchor():
