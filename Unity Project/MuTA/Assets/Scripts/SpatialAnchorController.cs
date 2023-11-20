@@ -63,15 +63,21 @@ public class SpatialAnchorController : MonoBehaviour
     private void onAnchorIDFound()
     {
         string anchorID = networkUtils.getAnchorData().id;
+        if (anchorID == "")
+        {
+            Debug.Log("Anchor ID empty, treated as not found");
+            onAnchorIDNotFound();
+            return;
+        }
         Debug.Log("Anchor ID Found to be: " + anchorID);
-        anchorModule.OnFindASAAnchor += onAnchorFound;
+        anchorModule.OnFoundASAAnchor += onAnchorFound;
         anchorModule.FindAzureAnchor(anchorID);
     }
 
     private void onAnchorFound()
     {
         Debug.Log(anchorModule.currentAzureAnchorID + " Found");
-        //anchorTransform = anchorModule.GetCurrentAnchorTransform();
+        anchorTransform = anchorModule.GetCurrentAnchorTransform();
         Debug.Log("Current Position is: " + anchorTransform.position);
         onAnchorLocationFound?.Invoke();
     }
@@ -80,6 +86,7 @@ public class SpatialAnchorController : MonoBehaviour
     {
         Debug.Log("Successfully created anchor with ID: "+ anchorModule.currentAzureAnchorID);
         networkUtils.setAnchorID(anchorModule.currentAzureAnchorID);
+        onAnchorFound();
     }
     #endregion
 

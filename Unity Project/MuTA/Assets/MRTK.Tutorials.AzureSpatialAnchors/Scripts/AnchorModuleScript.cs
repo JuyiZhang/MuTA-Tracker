@@ -40,6 +40,7 @@ public class AnchorModuleScript : MonoBehaviour
         cloudManager.AnchorLocated += CloudManager_AnchorLocated;
 
         anchorLocateCriteria = new AnchorLocateCriteria();
+        StartAzureSession();
     }
 
     void Update()
@@ -110,6 +111,7 @@ public class AnchorModuleScript : MonoBehaviour
 
     public async void CreateAzureAnchor(GameObject theObject)
     {
+
         Debug.Log("\nAnchorModuleScript.CreateAzureAnchor()");
 
         // Notify AnchorFeedbackScript
@@ -157,7 +159,6 @@ public class AnchorModuleScript : MonoBehaviour
 
             // Actually save
             await cloudManager.CreateAnchorAsync(localCloudAnchor);
-
             // Store
             currentCloudAnchor = localCloudAnchor;
             localCloudAnchor = null;
@@ -169,12 +170,10 @@ public class AnchorModuleScript : MonoBehaviour
             {
                 Debug.Log($"Azure anchor with ID '{currentCloudAnchor.Identifier}' created successfully");
 
-                // Notify AnchorFeedbackScript
-                OnCreateAnchorSucceeded?.Invoke();
-
                 // Update the current Azure anchor ID
                 Debug.Log($"Current Azure anchor ID updated to '{currentCloudAnchor.Identifier}'");
                 currentAzureAnchorID = currentCloudAnchor.Identifier;
+                OnCreateAnchorSucceeded?.Invoke();
             }
             else
             {
@@ -351,6 +350,11 @@ public class AnchorModuleScript : MonoBehaviour
 
         StartCoroutine(GetSharedAzureAnchorIDCoroutine(publicSharingPin));
     }
+
+    public Pose GetCurrentAnchorTransform()
+    {
+        return currentCloudAnchor.GetPose();
+    }
     #endregion
 
     #region Event Handlers
@@ -394,9 +398,9 @@ public class AnchorModuleScript : MonoBehaviour
                     Debug.Log($"Setting object to anchor pose with position '{anchorPose.position} and rotation '{anchorPose.rotation}'");
                     transform.position = anchorPose.position;
                     transform.rotation = anchorPose.rotation;
-
+                    
                     gameObject.CreateNativeAnchor();
-
+                    OnFoundASAAnchor?.Invoke();
                     OnCreateLocalAnchor?.Invoke();
                 }
 
@@ -488,6 +492,7 @@ public class AnchorModuleScript : MonoBehaviour
 
     public delegate void FindAnchorDelegate();
     public event FindAnchorDelegate OnFindASAAnchor;
+    public event FindAnchorDelegate OnFoundASAAnchor;
 
     public delegate void AnchorLocatedDelegate();
     public event AnchorLocatedDelegate OnASAAnchorLocated;
