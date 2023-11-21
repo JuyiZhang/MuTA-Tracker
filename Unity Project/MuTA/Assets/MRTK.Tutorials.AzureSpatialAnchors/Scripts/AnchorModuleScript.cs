@@ -29,7 +29,7 @@ public class AnchorModuleScript : MonoBehaviour
     private CloudSpatialAnchorWatcher currentWatcher;
 
     private readonly Queue<Action> dispatchQueue = new Queue<Action>();
-
+    private bool onInitialize = false;
     #region Unity Lifecycle
     void Start()
     {
@@ -40,11 +40,16 @@ public class AnchorModuleScript : MonoBehaviour
         cloudManager.AnchorLocated += CloudManager_AnchorLocated;
 
         anchorLocateCriteria = new AnchorLocateCriteria();
-        StartAzureSession();
+        
     }
 
     void Update()
     {
+        if (!onInitialize)
+        {
+            StartAzureSession();
+            onInitialize = true;
+        }
         lock (dispatchQueue)
         {
             if (dispatchQueue.Count > 0)

@@ -102,6 +102,7 @@ public class ResearchModeVideoStream : MonoBehaviour
         Debug.Log("Successfully initiated Hololens Researchmode");
         tcpClient.ConnectToServerEvent();
         anchorController = GetComponent<SpatialAnchorController>();
+        anchorController.onAnchorLocationFound += startContinuousSend;
     }
 
     bool startRealtimePreview = true;
