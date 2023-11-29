@@ -43,6 +43,11 @@ public class SpatialAnchorController : MonoBehaviour
     {
         return anchorTransform.position;
     }
+
+    public Transform getAnchorTransform()
+    {
+        return anchorObject.transform;
+    }
     #endregion
 
     #region Event Handler

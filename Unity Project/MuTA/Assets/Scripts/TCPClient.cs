@@ -119,13 +119,13 @@ public class TCPClient : MonoBehaviour
     
     bool lastMessageSent = true;
 
-    public async void SendLongDepthSensorCombined(ushort[] data1, byte[] data2, float[] pointCloud, long timestamp, Vector3 euler, Vector3 position){
+    public async void SendLongDepthSensorCombined(ushort[] data1, byte[] data2, float[] pointCloud, long timestamp, Vector3 euler, Vector3 position, Vector3 anchorEuler, Vector3 anchorPosition){
     
         if (!lastMessageSent) return;
         lastMessageSent = false;
         try
         {
-            float[] transform = {position.x, position.y, position.z, euler.x, euler.y, euler.z};
+            float[] transform = {position.x, position.y, position.z, euler.x, euler.y, euler.z, anchorPosition.x, anchorPosition.y, anchorPosition.z, anchorEuler.x, anchorEuler.y, anchorEuler.z};
             // Write header
             dw.WriteString("c"); // header "c" 
 
@@ -133,7 +133,7 @@ public class TCPClient : MonoBehaviour
             dw.WriteInt64(timestamp);
             dw.WriteInt32(data1.Length * 2);
             dw.WriteInt32(data2.Length);
-            dw.WriteInt32(pointCloud.Length * 4 + 24);
+            dw.WriteInt32(pointCloud.Length * 4 + 48);
             dw.WriteBytes(UINT16ToBytes(data1));
             dw.WriteBytes(data2);
             dw.WriteBytes(FloatToBytes(pointCloud));

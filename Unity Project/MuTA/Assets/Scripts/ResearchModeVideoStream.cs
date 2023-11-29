@@ -183,8 +183,11 @@ public class ResearchModeVideoStream : MonoBehaviour
 
     public void SendLongDepthSensorCombined()
     {
-        Vector3 currentPosition = camera.transform.position - anchorController.getAnchorPosition();
-        Vector3 currentRotation = camera.transform.rotation.eulerAngles - anchorController.getAnchorRotation();
+        Vector3 anchorPosition = anchorController.getAnchorPosition();
+        Vector3 anchorEuler = anchorController.getAnchorRotation();
+        Vector3 currentPosition = camera.transform.position - anchorPosition;
+        Vector3 currentRotation = camera.transform.rotation.eulerAngles - anchorEuler;
+        
         Debug.Log("Sending Data...");
         Debug.Log("Current Position is: " + currentPosition + ". Current Rotation is: " + currentRotation);
 #if WINDOWS_UWP
@@ -192,7 +195,7 @@ public class ResearchModeVideoStream : MonoBehaviour
         var depthMap = researchMode.GetLongDepthMapBuffer();
         if (tcpClient != null)
         {
-            tcpClient.SendLongDepthSensorCombined(depthMap, longAbImageFrameData, pointCloud, timestamp, currentRotation, currentPosition);
+            tcpClient.SendLongDepthSensorCombined(depthMap, longAbImageFrameData, pointCloud, timestamp, currentRotation, currentPosition, anchorEuler, anchorPosition);
         }
 #endif
     }
@@ -213,6 +216,24 @@ public class ResearchModeVideoStream : MonoBehaviour
     private void OnApplicationFocus(bool focus)
     {
         if (!focus) StopSensorsEvent();
+    }
+
+    private float[] PointCloudFromLensToAnchor(float[] pointCloud, Transform anchorTransform)
+    {
+        var length = pointCloud.Length;
+        var transform = anchorTransform.worldToLocalMatrix;
+        for(int i=0; i<length/3; i++)
+        {
+            Vector3 position = new Vector3();
+            position.x = pointCloud[i * 3];
+            position.y = pointCloud[i * 3 + 1];
+            position.z = pointCloud[i * 3 + 2];
+            Vector3 localPos = transform.MultiplyPoint(position);
+            pointCloud[i * 3] = localPos.x;
+            pointCloud[i * 3 + 1] = localPos.y;
+            pointCloud[i * 3 + 1] = localPos.z;
+        }
+        return pointCloud;
     }
 
 #if WINDOWS_UWP
