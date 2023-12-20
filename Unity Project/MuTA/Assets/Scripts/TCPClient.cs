@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Threading;
 using UnityEngine;
 //using System.Runtime.Serialization.Formatters.Binary;
 #if WINDOWS_UWP
@@ -8,7 +9,25 @@ using Windows.Storage.Streams;
 
 public class TCPClient : MonoBehaviour
 {
+    [SerializeField]
+    private string port;
+
+    private string hostIPAddress;
+
+    public Renderer ConnectionStatusLED;
+    private bool connected = false;
+    public bool Connected
+    {
+        get { return connected; }
+    }
+    private Thread dataRcvThread;
+    private NetworkUtils networkUtils;
+    public event Notify transformationDataReceived;
+    private Vector3 trackedPosition = new Vector3();
+    private Vector3 trackedRotation = new Vector3();
+
     #region Unity Functions
+
 
     private void Awake()
     {
@@ -30,19 +49,7 @@ public class TCPClient : MonoBehaviour
     }
     #endregion // Unity Functions
 
-    [SerializeField]
-    private string port;
-
-    private string hostIPAddress;
-
-    public Renderer ConnectionStatusLED;
-    private bool connected = false;
-    public bool Connected
-    {
-        get { return connected; }
-    }
-
-    private NetworkUtils networkUtils;
+    
 
 #if WINDOWS_UWP
     StreamSocket socket = null;
@@ -66,6 +73,10 @@ public class TCPClient : MonoBehaviour
             dr.InputStreamOptions = InputStreamOptions.Partial;
             connected = true;
             ConnectionStatusLED.material.color = Color.green;
+
+            dataRcvThread = new Thread(new ThreadStart(dataRcv));
+            dataRcvThread.IsBackground = true;
+            dataRcvThread.Start();
         }
         catch (Exception ex)
         {
@@ -73,6 +84,23 @@ public class TCPClient : MonoBehaviour
             Debug.Log(webErrorStatus.ToString() != "Unknown" ? webErrorStatus.ToString() : ex.Message);
         }
 #endif
+    }
+
+    private async void dataRcv()
+    {
+        Byte[] bytes = new Byte[sizeof(float) * 6];
+        while (true)
+        {
+#if WINDOWS_UWP
+            await dr.LoadAsync(sizeof(float) * 6);
+            dr.ReadBytes(bytes);
+            
+#endif
+            float[] receivedPose = BytesToFloat(bytes);
+            trackedPosition.Set(receivedPose[0], receivedPose[1], receivedPose[2]);
+            trackedRotation.Set(receivedPose[3], receivedPose[4], receivedPose[5]);
+            transformationDataReceived?.Invoke();
+        }
     }
 
     private void StopConnection()
@@ -270,6 +298,16 @@ public class TCPClient : MonoBehaviour
     #endregion
 #endif
 
+    #region Public Function
+    public Vector3 getTrackedPosition()
+    {
+        return trackedPosition;
+    }
+    public Vector3 getTrackedRotation()
+    {
+        return trackedRotation;
+    }
+    #endregion
 
     #region Conversion Function
     byte[] UINT16ToBytes(ushort[] data)
@@ -294,16 +332,16 @@ public class TCPClient : MonoBehaviour
     }
 #endregion
 
-    #region Button Callback
+#region Button Callback
     public void ConnectToServerEvent()
     {
         var networkUtil = GetComponent<NetworkUtils>();
         Debug.Log("Begin Connection...");
         networkUtil.syncHostIP();
     }
-    #endregion
+#endregion
 
-    #region Delegate Callback
+#region Delegate Callback
     public void OnHostIPFound()
     {
         hostIPAddress = networkUtils.getHostIP();
@@ -311,5 +349,5 @@ public class TCPClient : MonoBehaviour
         if (!connected) StartConnection();
         else StopConnection();
     }
-    #endregion
+#endregion
 }

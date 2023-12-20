@@ -119,11 +119,6 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClInclude Include="Cannon\Common\FileUtilities.h" />
-    <ClInclude Include="Cannon\Common\FilterDoubleExponential.h" />
-    <ClInclude Include="Cannon\Common\Intersectable.h" />
-    <ClInclude Include="Cannon\Common\Timer.h" />
-    <ClInclude Include="Cannon\MixedReality.h" />
     <ClInclude Include="pch.h" />
     <ClInclude Include="HL2ResearchMode.h">
       <DependentUpon>HL2ResearchMode.idl</DependentUpon>
@@ -132,7 +127,6 @@
     <ClInclude Include="TimeConverter.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="Cannon\MixedReality.cpp" />
     <ClCompile Include="pch.cpp">
       <PrecompiledHeader>Create</PrecompiledHeader>
     </ClCompile>

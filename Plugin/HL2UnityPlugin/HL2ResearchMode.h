@@ -15,6 +15,8 @@
 #include <vector>
 #include<winrt/Windows.Perception.Spatial.h>
 #include<winrt/Windows.Perception.Spatial.Preview.h>
+#include <winrt/Windows.UI.Input.Spatial.h>
+#include <winrt/Windows.Perception.People.h>
 
 namespace winrt::HL2UnityPlugin::implementation
 {
@@ -25,6 +27,7 @@ namespace winrt::HL2UnityPlugin::implementation
         UINT16 GetCenterDepth();
         int GetDepthBufferSize();
         int GetLongDepthBufferSize();
+        UINT64 GetTimeStamp();
         hstring PrintDepthResolution();
         hstring PrintDepthExtrinsics();
 		hstring PrintLFResolution();
@@ -86,6 +89,8 @@ namespace winrt::HL2UnityPlugin::implementation
         com_array<float> GetPointCloudBuffer();
         com_array<float> GetLongThrowPointCloudBuffer();
         com_array<float> GetCenterPoint();
+        com_array<float> GetHeadPosition();
+        com_array<float> GetHeadForwardVector();
         
         std::mutex mu;
 
@@ -96,6 +101,10 @@ namespace winrt::HL2UnityPlugin::implementation
         int m_pointcloudLength = 0;
         float* m_longThrowPointCloud = nullptr;
         int m_longThrowPointcloudLength = 0;
+        std::atomic_uint64_t timestamp = 0;
+
+        DirectX::XMVECTOR m_headPosition;
+        DirectX::XMVECTOR m_headForwardDirection;
         
         UINT16* m_depthMap = nullptr;
         UINT8* m_depthMapTexture = nullptr;

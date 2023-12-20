@@ -5,6 +5,7 @@ namespace HL2UnityPlugin
         HL2ResearchMode();
 
         UInt16 GetCenterDepth();
+        UInt64 GetTimeStamp();
         UInt16[] GetDepthMapBuffer();
         UInt8[] GetDepthMapTextureBuffer();
         UInt16[] GetShortAbImageBuffer();
@@ -27,6 +28,8 @@ namespace HL2UnityPlugin
         Single[] GetMagSample();
 
         Single[] GetCenterPoint();
+        Single[] GetHeadPosition();
+        Single[] GetHeadForwardVector();
         Int32 GetDepthBufferSize();
         Int32 GetLongDepthBufferSize();
         String PrintDepthResolution();

@@ -208,6 +208,7 @@ namespace winrt::HL2UnityPlugin::implementation
 
                 ResearchModeSensorTimestamp timestamp;
                 pDepthSensorFrame->GetTimeStamp(&timestamp);
+                
 
                 if (timestamp.HostTicks == lastTs) continue;
                 lastTs = timestamp.HostTicks;
@@ -429,9 +430,25 @@ namespace winrt::HL2UnityPlugin::implementation
 
                 ResearchModeSensorTimestamp timestamp;
                 pDepthSensorFrame->GetTimeStamp(&timestamp);
+                /*FILETIME sensorTs;
+                GetSystemTimeAsFileTime(&sensorTs);
+                
+                _ULARGE_INTEGER sensorTimestamp;
+                sensorTimestamp.LowPart = sensorTs.dwLowDateTime;
+                sensorTimestamp.HighPart = sensorTs.dwHighDateTime;
+                pHL2ResearchMode->timestamp = sensorTimestamp.QuadPart;*/
 
                 if (timestamp.HostTicks == lastTs) continue;
                 lastTs = timestamp.HostTicks;
+
+                winrt::Windows::Foundation::DateTime currentTimestamp = winrt::clock::now();
+                pHL2ResearchMode->timestamp = std::chrono::duration_cast<std::chrono::milliseconds>(currentTimestamp.time_since_epoch()).count();
+                winrt::Windows::UI::Input::Spatial::SpatialPointerPose pointerPose = winrt::Windows::UI::Input::Spatial::SpatialPointerPose::TryGetAtTimestamp(pHL2ResearchMode->m_refFrame, PerceptionTimestampHelper::FromHistoricalTargetTime(currentTimestamp));
+                if (pointerPose)
+                {
+                    pHL2ResearchMode->m_headPosition = XMVectorSetW(XMLoadFloat3(&pointerPose.Head().Position()), 1.0f);
+                    pHL2ResearchMode->m_headForwardDirection = XMLoadFloat3(&pointerPose.Head().ForwardDirection());
+                }
 
                 // get tracking transform
                 Windows::Perception::Spatial::SpatialLocation transToWorld = nullptr;
@@ -958,6 +975,8 @@ namespace winrt::HL2UnityPlugin::implementation
     inline bool HL2ResearchMode::LongThrowPointCloudUpdated() { return m_longThrowPointCloudUpdated; }
 
     inline int HL2ResearchMode::GetLongDepthBufferSize() { return m_longDepthBufferSize; }
+    
+    inline UINT64 HL2ResearchMode::GetTimeStamp() { return timestamp;  }
 
     inline bool HL2ResearchMode::LongDepthMapTextureUpdated() { return m_longDepthMapTextureUpdated; }
 
@@ -1384,6 +1403,14 @@ namespace winrt::HL2UnityPlugin::implementation
         com_array<float> centerPoint = com_array<float>(std::move_iterator(m_centerPoint), std::move_iterator(m_centerPoint + 3));
 
         return centerPoint;
+    }
+
+    com_array<float> HL2ResearchMode::GetHeadPosition() {
+        return com_array<float>(m_headPosition.n128_f32);
+    }
+
+    com_array<float> HL2ResearchMode::GetHeadForwardVector() {
+        return com_array<float>(m_headForwardDirection.n128_f32);
     }
 
     // Set the reference coordinate system. Need to be set before the sensor loop starts; otherwise, default coordinate will be used.

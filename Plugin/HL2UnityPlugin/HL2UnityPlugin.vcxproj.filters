@@ -13,17 +13,11 @@
     <ClCompile Include="pch.cpp" />
     <ClCompile Include="$(GeneratedFilesDir)module.g.cpp" />
     <ClCompile Include="TimeConverter.cpp" />
-    <ClCompile Include="Cannon\MixedReality.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="pch.h" />
     <ClInclude Include="ResearchModeApi.h" />
     <ClInclude Include="TimeConverter.h" />
-    <ClInclude Include="Cannon\MixedReality.h" />
-    <ClInclude Include="Cannon\Common\FileUtilities.h" />
-    <ClInclude Include="Cannon\Common\FilterDoubleExponential.h" />
-    <ClInclude Include="Cannon\Common\Intersectable.h" />
-    <ClInclude Include="Cannon\Common\Timer.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="HL2UnityPlugin.def" />

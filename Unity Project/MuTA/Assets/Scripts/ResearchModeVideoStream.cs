@@ -40,7 +40,15 @@ public class ResearchModeVideoStream : MonoBehaviour
 
     private bool continuousSend = false;
 
-    
+    private Transform frameCameraTransform;
+
+    private bool updatedPointCloudSent = true;
+    private float[] pointCloud = new float[] { };
+
+    private Vector3 cameraPosition = new Vector3();
+    private Vector3 cameraFrontDirection = new Vector3();
+
+
 
 #if ENABLE_WINMD_SUPPORT
     Windows.Perception.Spatial.SpatialCoordinateSystem unityWorldOrigin;
@@ -103,6 +111,7 @@ public class ResearchModeVideoStream : MonoBehaviour
         tcpClient.ConnectToServerEvent();
         anchorController = GetComponent<SpatialAnchorController>();
         anchorController.onAnchorLocationFound += startContinuousSend;
+        tcpClient.transformationDataReceived += applyTranformData;
     }
 
     bool startRealtimePreview = true;
@@ -162,15 +171,18 @@ public class ResearchModeVideoStream : MonoBehaviour
         }
     }
 
-    private bool updatedPointCloudSent = true;
-    private float[] pointCloud = new float[] { };
+    
 #if ENABLE_WINMD_SUPPORT
     private void UpdatePointCloud()
     {
         if (enablePointCloud)
         {
             if (researchMode.LongThrowPointCloudUpdated()){
-                pointCloud = researchMode.GetLongThrowPointCloudBuffer();     
+                pointCloud = researchMode.GetLongThrowPointCloudBuffer();    
+                float[] headPos = researchMode.GetHeadPosition();
+                float[] headFwdDir = researchMode.GetHeadForwardVector();
+                cameraPosition.Set(headPos[0], headPos[1], headPos[2]);
+                cameraFrontDirection.Set(headFwdDir[0], headFwdDir[1], headFwdDir[2]);
                 updatedPointCloudSent = false;
             }
         }
@@ -179,17 +191,15 @@ public class ResearchModeVideoStream : MonoBehaviour
 
 
 
-#region Button Event Functions
+    #region Button Event Functions
 
     public void SendLongDepthSensorCombined()
     {
         Vector3 anchorPosition = anchorController.getAnchorPosition();
         Vector3 anchorEuler = anchorController.getAnchorRotation();
-        Vector3 currentPosition = camera.transform.position - anchorPosition;
-        Vector3 currentRotation = camera.transform.rotation.eulerAngles - anchorEuler;
-        
-        Debug.Log("Sending Data...");
-        Debug.Log("Current Position is: " + currentPosition + ". Current Rotation is: " + currentRotation);
+        Vector3 currentPosition = cameraPosition;
+        Vector3 currentRotation = cameraFrontDirection;
+
 #if WINDOWS_UWP
         long timestamp = GetCurrentTimestampUnix();
         var depthMap = researchMode.GetLongDepthMapBuffer();
@@ -234,6 +244,17 @@ public class ResearchModeVideoStream : MonoBehaviour
             pointCloud[i * 3 + 1] = localPos.z;
         }
         return pointCloud;
+    }
+
+    private void applyTranformData()
+    {
+        Vector3 trackPos = tcpClient.getTrackedPosition();
+        Quaternion rotQTracked = new Quaternion();
+        Vector3 trackRot = tcpClient.getTrackedRotation();
+        rotQTracked.eulerAngles = trackRot;
+        GameObject trackedPerson = GameObject.CreatePrimitive(PrimitiveType.Capsule);
+        trackedPerson.transform.position = trackPos;
+        trackedPerson.transform.SetPositionAndRotation(trackPos, rotQTracked);
     }
 
 #if WINDOWS_UWP
