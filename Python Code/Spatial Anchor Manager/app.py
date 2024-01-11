@@ -1,4 +1,4 @@
-from flask import Flask, request, g, current_app
+from flask import Flask, request, g, current_app, render_template
 from flask_pymongo import PyMongo
 from werkzeug.local import LocalProxy
 import json
@@ -9,7 +9,8 @@ app = Flask(__name__)
 
 @app.route("/")
 def home():
-	return "Hello World"
+    anchorData = json.loads(queryAnchor())
+    return render_template("index.html", anchor_name = "Found" if anchorData["result"] == "success" else "Not Found")
 
 @app.route("/add_anchor", methods=['POST'])
 def addAnchor():
@@ -36,9 +37,9 @@ def addAnchor():
 def removeAnchor():
     if os.path.exists("anchor_data.json"):
         os.remove("anchor_data.json")
-        return "Remove Success"
+        return render_template("action.html", result = "Success")
     else:
-        return "No anchor is present"
+        return render_template("action.html", result = "No Anchor Found")
 
 @app.route("/query_anchor")
 def queryAnchor():
@@ -109,6 +110,15 @@ def queryHost():
 def version():
     return "0.0.4:110820231604"
 
+@app.route("/qr_test")
+def qr_test():
+    qr_result = {
+        "title": "Hello World",
+        "caption": "This field is used to test out the content included in the qrcode and shall be replaced in the future with actual test. For right now, just sit back and enjoy the content. Good luck! ;)"
+    }
+    return(json.dumps(qr_result))
+    
+    
 def get_db():
     db = getattr(g, "_database", None)
     if db is None:

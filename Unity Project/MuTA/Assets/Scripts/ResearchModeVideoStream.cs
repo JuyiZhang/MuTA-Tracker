@@ -1,6 +1,7 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UI;
 using System;
 using System.Runtime.InteropServices;
 
@@ -10,6 +11,9 @@ using HL2UnityPlugin;
 
 public class ResearchModeVideoStream : MonoBehaviour
 {
+
+    #region Variables
+
 #if ENABLE_WINMD_SUPPORT
     HL2ResearchMode researchMode;
 #endif
@@ -22,19 +26,16 @@ public class ResearchModeVideoStream : MonoBehaviour
     };
 
     [SerializeField] bool enablePointCloud = true;
-    [SerializeField] Camera camera;
+    [SerializeField] GameObject trackedPerson;
+    [SerializeField] private Debugger debugger;
+    [SerializeField] private TMPro.TextMeshProUGUI pointCloudLength;
+    [SerializeField] private TMPro.TextMeshProUGUI currentPose;
 
     SpatialAnchorController anchorController;
 
     TCPClient tcpClient;
 
-    public GameObject longDepthPreviewPlane = null;
-    private Material longDepthMediaMaterial = null;
-    private Texture2D longDepthMediaTexture = null;
-    private byte[] longDepthFrameData = null;
-
-    public GameObject longAbImagePreviewPlane = null;
-    private Material longAbImageMediaMaterial = null;
+    public Image longAbImagePreviewPlane = null;
     private Texture2D longAbImageMediaTexture = null;
     private byte[] longAbImageFrameData = null;
 
@@ -48,12 +49,15 @@ public class ResearchModeVideoStream : MonoBehaviour
     private Vector3 cameraPosition = new Vector3();
     private Vector3 cameraFrontDirection = new Vector3();
 
-
+    
 
 #if ENABLE_WINMD_SUPPORT
     Windows.Perception.Spatial.SpatialCoordinateSystem unityWorldOrigin;
 #endif
 
+    #endregion
+
+    #region Unity Lifecycle
     private void Awake()
     {
 #if UNITY_2020_1_OR_NEWER // note: Unity 2021.2 and later not supported
@@ -68,32 +72,22 @@ public class ResearchModeVideoStream : MonoBehaviour
         unityWorldOrigin = Marshal.GetObjectForIUnknown(WorldOriginPtr) as Windows.Perception.Spatial.SpatialCoordinateSystem;
 #endif
 #endif
-
     }
+
     void Start()
     {
         Debug.Log("Research Mode Init");
 
-        if (longDepthPreviewPlane != null)
-        {
-            longDepthMediaMaterial = longDepthPreviewPlane.GetComponent<MeshRenderer>().material;
-            longDepthMediaTexture = new Texture2D(320, 288, TextureFormat.Alpha8, false);
-            longDepthMediaMaterial.mainTexture = longDepthMediaTexture;
-        }
+        debugger.SetIndicatorState("send", "ip", "Waiting to send point cloud");
 
         if (longAbImagePreviewPlane != null)
         {
-            longAbImageMediaMaterial = longAbImagePreviewPlane.GetComponent<MeshRenderer>().material;
             longAbImageMediaTexture = new Texture2D(320, 288, TextureFormat.Alpha8, false);
-            longAbImageMediaMaterial.mainTexture = longAbImageMediaTexture;
+            longAbImagePreviewPlane.sprite = Sprite.Create(longAbImageMediaTexture, new Rect(0, 0, 320, 288), new Vector2(160, 144));
         }
-
-        longDepthPreviewPlane.SetActive(true);
-        longAbImagePreviewPlane.SetActive(true);
 
         tcpClient = GetComponent<TCPClient>();
         
-
 #if ENABLE_WINMD_SUPPORT
         researchMode = new HL2ResearchMode();
 
@@ -107,7 +101,9 @@ public class ResearchModeVideoStream : MonoBehaviour
         researchMode.StartLongDepthSensorLoop(enablePointCloud);
 
 #endif
+
         Debug.Log("Successfully initiated Hololens Researchmode");
+
         tcpClient.ConnectToServerEvent();
         anchorController = GetComponent<SpatialAnchorController>();
         anchorController.onAnchorLocationFound += startContinuousSend;
@@ -118,27 +114,6 @@ public class ResearchModeVideoStream : MonoBehaviour
     void LateUpdate()
     {
 #if ENABLE_WINMD_SUPPORT
-
-        // update long depth map texture
-        if (startRealtimePreview && longDepthPreviewPlane != null && researchMode.LongDepthMapTextureUpdated())
-        {
-            byte[] frameTexture = researchMode.GetLongDepthMapTextureBuffer();
-            if (frameTexture.Length > 0)
-            {
-                if (longDepthFrameData == null)
-                {
-                    longDepthFrameData = frameTexture;
-                }
-                else
-                {
-                    System.Buffer.BlockCopy(frameTexture, 0, longDepthFrameData, 0, longDepthFrameData.Length);
-                }
-
-                longDepthMediaTexture.LoadRawTextureData(longDepthFrameData);
-                longDepthMediaTexture.Apply();
-            }
-        }
-
         // update long-throw AbImage texture
         if (startRealtimePreview && longAbImagePreviewPlane != null && researchMode.LongAbImageTextureUpdated())
         {
@@ -153,32 +128,34 @@ public class ResearchModeVideoStream : MonoBehaviour
                 {
                     System.Buffer.BlockCopy(frameTexture, 0, longAbImageFrameData, 0, longAbImageFrameData.Length);
                 }
-
                 longAbImageMediaTexture.LoadRawTextureData(longAbImageFrameData);
                 longAbImageMediaTexture.Apply();
+                longAbImagePreviewPlane.sprite = Sprite.Create(longAbImageMediaTexture, new Rect(0, 0, 320, 288), new Vector2(160, 144));
             }
         }
 
         // Update point cloud
         UpdatePointCloud();
-        
-        
 #endif
         if (tcpClient.Connected && !updatedPointCloudSent && continuousSend)
         {
             SendLongDepthSensorCombined();
             updatedPointCloudSent = true;
         }
+        pointCloudLength.text = "Data Length: " + pointCloud.Length.ToString();
+        currentPose.text = cameraPosition.ToString();
     }
 
-    
+    #endregion
+
 #if ENABLE_WINMD_SUPPORT
     private void UpdatePointCloud()
     {
         if (enablePointCloud)
         {
             if (researchMode.LongThrowPointCloudUpdated()){
-                pointCloud = researchMode.GetLongThrowPointCloudBuffer();    
+                pointCloud = researchMode.GetLongThrowPointCloudBuffer();
+                
                 float[] headPos = researchMode.GetHeadPosition();
                 float[] headFwdDir = researchMode.GetHeadForwardVector();
                 cameraPosition.Set(headPos[0], headPos[1], headPos[2]);
@@ -215,10 +192,18 @@ public class ResearchModeVideoStream : MonoBehaviour
         researchMode.StopAllSensorDevice();
 #endif
         startRealtimePreview = false;
+        Application.Quit();
     }
+
+    public void RestartApplication()
+    {
+        System.Diagnostics.Process.Start(Application.dataPath.Replace("_Data", "exe"));
+    }
+
     public void startContinuousSend()
     {
         Debug.Log("The continuous send is now " + continuousSend.ToString());
+        debugger.SetIndicatorState("send", "ok", "Sending Point Cloud");
         continuousSend = !continuousSend;
     }
 
@@ -252,9 +237,13 @@ public class ResearchModeVideoStream : MonoBehaviour
         Quaternion rotQTracked = new Quaternion();
         Vector3 trackRot = tcpClient.getTrackedRotation();
         rotQTracked.eulerAngles = trackRot;
-        GameObject trackedPerson = GameObject.CreatePrimitive(PrimitiveType.Capsule);
-        trackedPerson.transform.position = trackPos;
-        trackedPerson.transform.SetPositionAndRotation(trackPos, rotQTracked);
+        //GameObject trackedPerson = GameObject.CreatePrimitive(PrimitiveType.Capsule);
+        if (trackedPerson != null)
+        {
+            trackedPerson.transform.position = trackPos;
+            trackedPerson.transform.SetPositionAndRotation(trackPos, rotQTracked);
+        }
+
     }
 
 #if WINDOWS_UWP

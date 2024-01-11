@@ -12,9 +12,11 @@ public class TCPClient : MonoBehaviour
     [SerializeField]
     private string port;
 
+    [SerializeField]
+    private Debugger debugger;
+
     private string hostIPAddress;
 
-    public Renderer ConnectionStatusLED;
     private bool connected = false;
     public bool Connected
     {
@@ -31,7 +33,7 @@ public class TCPClient : MonoBehaviour
 
     private void Awake()
     {
-        ConnectionStatusLED.material.color = Color.red;
+        debugger.SetIndicatorState("tcp", "ip", "Pending Connection");
     }
 
     private void Start()
@@ -72,7 +74,7 @@ public class TCPClient : MonoBehaviour
             dr = new DataReader(socket.InputStream);
             dr.InputStreamOptions = InputStreamOptions.Partial;
             connected = true;
-            ConnectionStatusLED.material.color = Color.green;
+            debugger.SetIndicatorState("tcp", "ok", "Connected to " + hostIPAddress);
 
             dataRcvThread = new Thread(new ThreadStart(dataRcv));
             dataRcvThread.IsBackground = true;
@@ -82,6 +84,7 @@ public class TCPClient : MonoBehaviour
         {
             SocketErrorStatus webErrorStatus = SocketError.GetStatus(ex.GetBaseException().HResult);
             Debug.Log(webErrorStatus.ToString() != "Unknown" ? webErrorStatus.ToString() : ex.Message);
+            debugger.SetIndicatorState("tcp", "error", webErrorStatus.ToString() != "Unknown" ? webErrorStatus.ToString() : ex.Message);
         }
 #endif
     }
@@ -94,12 +97,16 @@ public class TCPClient : MonoBehaviour
 #if WINDOWS_UWP
             await dr.LoadAsync(sizeof(float) * 6);
             dr.ReadBytes(bytes);
-            
 #endif
             float[] receivedPose = BytesToFloat(bytes);
-            trackedPosition.Set(receivedPose[0], receivedPose[1], receivedPose[2]);
-            trackedRotation.Set(receivedPose[3], receivedPose[4], receivedPose[5]);
-            transformationDataReceived?.Invoke();
+            Debug.Log("Data Received: " + receivedPose.Length.ToString());
+            if(receivedPose.Length == 6) {
+                trackedPosition.Set(receivedPose[0], receivedPose[1], receivedPose[2]);
+                trackedRotation.Set(receivedPose[3], receivedPose[4], receivedPose[5]);
+                Debug.Log("Position: " + trackedPosition.ToString() + ", Rotation: " + trackedRotation.ToString());
+                transformationDataReceived?.Invoke();
+            }
+            
         }
     }
 

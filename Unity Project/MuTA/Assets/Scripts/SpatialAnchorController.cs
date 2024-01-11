@@ -8,6 +8,9 @@ public class SpatialAnchorController : MonoBehaviour
     [SerializeField]
     private GameObject anchorObject;
 
+    [SerializeField]
+    private Debugger debugger;
+
     private AnchorModuleScript anchorModule;
     private NetworkUtils networkUtils;
 
@@ -19,6 +22,7 @@ public class SpatialAnchorController : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
+        debugger.SetIndicatorState("anchor", "ip", "Pending Anchor Init");
         networkUtils = GetComponent<NetworkUtils>();
         networkUtils.onAnchorNotFound += onAnchorIDNotFound;
         networkUtils.onAnchorUpdate += onAnchorIDFound;
@@ -85,13 +89,16 @@ public class SpatialAnchorController : MonoBehaviour
         anchorTransform = anchorModule.GetCurrentAnchorTransform();
         Debug.Log("Current Position is: " + anchorTransform.position);
         onAnchorLocationFound?.Invoke();
+        debugger.SetIndicatorState("anchor", "ok", "Spatial Anchor Found");
     }
 
     private void onCreateAnchorSucceeded()
     {
         Debug.Log("Successfully created anchor with ID: "+ anchorModule.currentAzureAnchorID);
         networkUtils.setAnchorID(anchorModule.currentAzureAnchorID);
-        onAnchorFound();
+        anchorTransform = new Pose(gameObject.transform.position, gameObject.transform.rotation);
+        onAnchorLocationFound?.Invoke();
+        debugger.SetIndicatorState("anchor", "ok", "Spatial Anchor Established");
     }
     #endregion
 

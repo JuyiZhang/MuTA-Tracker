@@ -15,6 +15,8 @@ public class NetworkUtils : MonoBehaviour
     [SerializeField]
     private string website = "https://mutaw.azurewebsites.net/";
 
+    
+
     private AnchorData anchorData = new AnchorData();
     private string hostip = "";
 
