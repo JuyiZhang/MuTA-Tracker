@@ -76,7 +76,7 @@ public class ResearchModeVideoStream : MonoBehaviour
 
     void Start()
     {
-        Debug.Log("Research Mode Init");
+        
 
         debugger.SetIndicatorState("send", "ip", "Waiting to send point cloud");
 
@@ -87,16 +87,16 @@ public class ResearchModeVideoStream : MonoBehaviour
         }
 
         tcpClient = GetComponent<TCPClient>();
-        
+        Debug.Log("Research Mode Init");
 #if ENABLE_WINMD_SUPPORT
         researchMode = new HL2ResearchMode();
-
+        Debug.Log("Init Long Depth Sensor");
         // Initialize Long Depth Sensor
         researchMode.InitializeLongDepthSensor();
-        
+        Debug.Log("Set Reference System");
         researchMode.SetReferenceCoordinateSystem(unityWorldOrigin);
         researchMode.SetPointCloudDepthOffset(0);
-
+        Debug.Log("Start Sensor Loop");
         // Depth sensor should be initialized in only one mode
         researchMode.StartLongDepthSensorLoop(enablePointCloud);
 
@@ -108,6 +108,7 @@ public class ResearchModeVideoStream : MonoBehaviour
         anchorController = GetComponent<SpatialAnchorController>();
         anchorController.onAnchorLocationFound += startContinuousSend;
         tcpClient.transformationDataReceived += applyTranformData;
+        debugger.toggleContinuousSendSwitch();
     }
 
     bool startRealtimePreview = true;
@@ -203,8 +204,16 @@ public class ResearchModeVideoStream : MonoBehaviour
     public void startContinuousSend()
     {
         Debug.Log("The continuous send is now " + continuousSend.ToString());
-        debugger.SetIndicatorState("send", "ok", "Sending Point Cloud");
+        
         continuousSend = !continuousSend;
+        
+        if (continuousSend)
+        {
+            debugger.SetIndicatorState("send", "ok", "Sending Point Cloud");
+        } else
+        {
+            debugger.SetIndicatorState("send", "other", "Continuous Send Paused");
+        }
     }
 
 #endregion

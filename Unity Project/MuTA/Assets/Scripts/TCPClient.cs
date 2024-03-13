@@ -15,6 +15,9 @@ public class TCPClient : MonoBehaviour
     [SerializeField]
     private Debugger debugger;
 
+    [SerializeField]
+    private TMPro.TextMeshProUGUI buttonText; 
+
     private string hostIPAddress;
 
     private bool connected = false;
@@ -62,6 +65,7 @@ public class TCPClient : MonoBehaviour
     private async void StartConnection()
     {
         Debug.Log("Starting Connection...");
+
 #if WINDOWS_UWP
         if (socket != null) socket.Dispose();
 
@@ -74,6 +78,7 @@ public class TCPClient : MonoBehaviour
             dr = new DataReader(socket.InputStream);
             dr.InputStreamOptions = InputStreamOptions.Partial;
             connected = true;
+            buttonText.text = "Disconnect";
             debugger.SetIndicatorState("tcp", "ok", "Connected to " + hostIPAddress);
 
             dataRcvThread = new Thread(new ThreadStart(dataRcv));
@@ -83,6 +88,7 @@ public class TCPClient : MonoBehaviour
         catch (Exception ex)
         {
             SocketErrorStatus webErrorStatus = SocketError.GetStatus(ex.GetBaseException().HResult);
+            Debug.Log("Stream Error Detected");
             Debug.Log(webErrorStatus.ToString() != "Unknown" ? webErrorStatus.ToString() : ex.Message);
             debugger.SetIndicatorState("tcp", "error", webErrorStatus.ToString() != "Unknown" ? webErrorStatus.ToString() : ex.Message);
         }
@@ -112,6 +118,7 @@ public class TCPClient : MonoBehaviour
 
     private void StopConnection()
     {
+        buttonText.text = "Connect";
 #if WINDOWS_UWP
         dw?.DetachStream();
         dw?.Dispose();
@@ -128,29 +135,6 @@ public class TCPClient : MonoBehaviour
 
 #if WINDOWS_UWP
     #region Send Data
-
-    public async void SendPointCloud(float[] pointCloud, long timestamp) {
-    
-        if (!lastMessageSent) return;
-        lastMessageSent = false;
-        try {
-            dw.WriteString("p"); //header "p" for point cloud
-            dw.WriteInt64(timestamp);
-            dw.WriteInt64(pointCloud.Length); //length of float elements
-
-            dw.WriteBytes(FloatToBytes(pointCloud)); //write actual data
-
-            await dw.StoreAsync();
-            await dw.FlushAsync();
-        } catch (Exception ex) {
-            SocketErrorStatus webErrorStatus = SocketError.GetStatus(ex.GetBaseException().HResult);
-            Debug.Log(webErrorStatus.ToString() != "Unknown" ? webErrorStatus.ToString() : ex.Message);
-        }
-        lastMessageSent = true;
-        //numSendFrames+=1;
-        //serverFeedback="send " + numSendFrames.ToString() + " frames of point cloud";
-
-    }
     
     bool lastMessageSent = true;
 
@@ -183,124 +167,11 @@ public class TCPClient : MonoBehaviour
         {
             SocketErrorStatus webErrorStatus = SocketError.GetStatus(ex.GetBaseException().HResult);
             Debug.Log(webErrorStatus.ToString() != "Unknown" ? webErrorStatus.ToString() : ex.Message);
+            debugger.SetIndicatorState("tcp", "error", webErrorStatus.ToString() != "Unknown" ? webErrorStatus.ToString() : ex.Message);
+            StopConnection();
         }
         lastMessageSent = true;
     
-    }
-
-    public async void SendUINT16Async(ushort[] data, long timestamp)
-    {
-        if (!lastMessageSent) return;
-        lastMessageSent = false;
-        try
-        {
-            // Write header
-            dw.WriteString("s"); // header "s" 
-
-            // Write point cloud
-            dw.WriteInt64(timestamp);
-            dw.WriteInt32(data.Length);
-            dw.WriteBytes(UINT16ToBytes(data));
-
-            // Send out
-            await dw.StoreAsync();
-            await dw.FlushAsync();
-        }
-        catch (Exception ex)
-        {
-            SocketErrorStatus webErrorStatus = SocketError.GetStatus(ex.GetBaseException().HResult);
-            Debug.Log(webErrorStatus.ToString() != "Unknown" ? webErrorStatus.ToString() : ex.Message);
-        }
-        lastMessageSent = true;
-    }
-
-    public async void SendUINT16Async(ushort[] data1, ushort[] data2, long timestamp)
-    {
-        if (!lastMessageSent) return;
-        lastMessageSent = false;
-        try
-        {
-            // Write header
-            dw.WriteString("s"); // header "s" stands for it is ushort array (uint16)
-
-            // Write Length
-            dw.WriteInt64(timestamp);
-            dw.WriteInt32(data1.Length + data2.Length);
-
-            // Write actual data
-            dw.WriteBytes(UINT16ToBytes(data1));
-            dw.WriteBytes(UINT16ToBytes(data2));
-
-            // Send out
-            await dw.StoreAsync();
-            await dw.FlushAsync();
-        }
-        catch (Exception ex)
-        {
-            SocketErrorStatus webErrorStatus = SocketError.GetStatus(ex.GetBaseException().HResult);
-            Debug.Log(webErrorStatus.ToString() != "Unknown" ? webErrorStatus.ToString() : ex.Message);
-        }
-        lastMessageSent = true;
-    }
-
-    public async void SendSpatialImageAsync(byte[] LFImage, byte[] RFImage, long ts_left, long ts_right)
-    {
-        if (!lastMessageSent) return;
-        lastMessageSent = false;
-        try
-        {
-            // Write header
-            dw.WriteString("f"); // header "f"
-
-            // Write Length
-            dw.WriteInt32(LFImage.Length + RFImage.Length);
-            dw.WriteInt64(ts_left);
-            dw.WriteInt64(ts_right);
-
-            // Write actual data
-            dw.WriteBytes(LFImage);
-            dw.WriteBytes(RFImage);
-
-            // Send out
-            await dw.StoreAsync();
-            await dw.FlushAsync();
-        }
-        catch (Exception ex)
-        {
-            SocketErrorStatus webErrorStatus = SocketError.GetStatus(ex.GetBaseException().HResult);
-            Debug.Log(webErrorStatus.ToString() != "Unknown" ? webErrorStatus.ToString() : ex.Message);
-        }
-        lastMessageSent = true;
-    }
-
-
-    public async void SendSpatialImageAsync(byte[] LRFImage, long ts_left, long ts_right)
-    {
-        if (!lastMessageSent) return;
-        lastMessageSent = false;
-        try
-        {
-            // Write header
-            dw.WriteString("f"); // header "f"
-
-            // Write Timestamp and Length
-            dw.WriteInt32(LRFImage.Length);
-            dw.WriteInt64(ts_left);
-            dw.WriteInt64(ts_right);
-
-            // Write actual data
-            dw.WriteBytes(LRFImage);
-
-            // Send out
-            await dw.StoreAsync();
-            await dw.FlushAsync();
-        }
-        catch (Exception ex)
-        {
-            SocketErrorStatus webErrorStatus = SocketError.GetStatus(ex.GetBaseException().HResult);
-            Debug.Log(webErrorStatus.ToString() != "Unknown" ? webErrorStatus.ToString() : ex.Message);
-        }
-        lastMessageSent = true;
     }
     #endregion
 #endif
@@ -343,7 +214,7 @@ public class TCPClient : MonoBehaviour
     public void ConnectToServerEvent()
     {
         var networkUtil = GetComponent<NetworkUtils>();
-        Debug.Log("Begin Connection...");
+        if (!connected) Debug.Log("Begin Connection...");
         networkUtil.syncHostIP();
     }
 #endregion
@@ -351,8 +222,12 @@ public class TCPClient : MonoBehaviour
 #region Delegate Callback
     public void OnHostIPFound()
     {
-        hostIPAddress = networkUtils.getHostIP();
-        Debug.Log("Host IP is: " + hostIPAddress);
+        var newAddress = networkUtils.getHostIP();
+        if (hostIPAddress != newAddress)
+        {
+            Debug.Log("Host IP updated to: " + newAddress);
+            hostIPAddress = newAddress;
+        }
         if (!connected) StartConnection();
         else StopConnection();
     }
